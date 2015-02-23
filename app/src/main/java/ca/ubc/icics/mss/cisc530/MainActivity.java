@@ -1,5 +1,6 @@
 package ca.ubc.icics.mss.cisc530;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,6 +25,9 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 Log.d(LOG_TAG, "ELI:Button->Map View");
+                Intent intent = new Intent();
+                intent.setClass(MainActivity.this, MapsActivity.class);
+                startActivity(intent);
             }
         });
     }
