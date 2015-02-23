@@ -2,5 +2,6 @@
     <string name="app_name">CISC530</string>
 
     <string name="hello_world">Hello world!</string>
+    <string name="course_name">Advanced Software Engineering Project</string>
     <string name="action_settings">Settings</string>
 </resources>
