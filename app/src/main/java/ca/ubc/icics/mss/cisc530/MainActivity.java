@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -25,6 +26,9 @@ public class MainActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 Log.d(LOG_TAG, "ELI:Button->Map View");
+
+                Toast.makeText(getApplicationContext(), R.string.loading_maps, Toast.LENGTH_LONG).show();
+
                 Intent intent = new Intent();
                 intent.setClass(MainActivity.this, MapsActivity.class);
                 startActivity(intent);
@@ -50,9 +54,11 @@ public class MainActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Log.d(LOG_TAG, "ELI:Menu->Settings");
+            Toast.makeText(getApplicationContext(), R.string.action_settings, Toast.LENGTH_LONG).show();
             return true;
         } else if (id == R.id.action_quit) {
             Log.d(LOG_TAG, "ELI:Menu->Quit");
+            Toast.makeText(getApplicationContext(), R.string.action_quit, Toast.LENGTH_LONG).show();
             return true;
         }
 
