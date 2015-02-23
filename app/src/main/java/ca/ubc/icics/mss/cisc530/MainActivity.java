@@ -2,16 +2,30 @@ package ca.ubc.icics.mss.cisc530;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 
 
 public class MainActivity extends ActionBarActivity {
+    private String LOG_TAG = "MainActivityLogTag";
+
+    private Button Btn_MapView = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Btn_MapView = (Button) findViewById(R.id.Btn_MapView);
+        Btn_MapView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(LOG_TAG, "ELI:Button->Map View");
+            }
+        });
     }
 
 
@@ -31,6 +45,10 @@ public class MainActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Log.d(LOG_TAG, "ELI:Menu->Settings");
+            return true;
+        } else if (id == R.id.action_quit) {
+            Log.d(LOG_TAG, "ELI:Menu->Quit");
             return true;
         }
 
