@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 
 public class MainActivity extends ActionBarActivity {
-    private String LOG_TAG = "MainActivityLogTag";
+    final private String LOG_TAG = "MainActivityLogTag";
 
     private Button Btn_MapView = null;
 
@@ -54,11 +54,11 @@ public class MainActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Log.d(LOG_TAG, "ELI:Menu->Settings");
-            Toast.makeText(getApplicationContext(), R.string.action_settings, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.settings, Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.action_quit) {
             Log.d(LOG_TAG, "ELI:Menu->Quit");
-            Toast.makeText(getApplicationContext(), R.string.action_quit, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.quit, Toast.LENGTH_SHORT).show();
             return true;
         }
 

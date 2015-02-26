@@ -2,6 +2,10 @@ package ca.ubc.icics.mss.cisc530;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -10,7 +14,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity {
+public class MapsActivity extends ActionBarActivity {
+    final private String LOG_TAG = "MapsActivityLogTag";
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
@@ -46,6 +51,52 @@ public class MapsActivity extends FragmentActivity {
         super.onPause();
 
         mGPS.stopUsingGPS();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_maps, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.maps_settings) {
+            Log.d(LOG_TAG, "ELI:Menu->Settings");
+            Toast.makeText(getApplicationContext(), R.string.settings, Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (id == R.id.maps_quit) {
+            Log.d(LOG_TAG, "ELI:Menu->Quit");
+            Toast.makeText(getApplicationContext(), R.string.quit, Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (id == R.id.maps_show_time_rule) {
+            Log.d(LOG_TAG, "ELI:Menu->Show Time Rule");
+            Toast.makeText(getApplicationContext(), R.string.show_time_rule, Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (id == R.id.maps_hide_time_rule) {
+            Log.d(LOG_TAG, "ELI:Menu->Hide Time Rule");
+            Toast.makeText(getApplicationContext(), R.string.hide_time_rule, Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (id == R.id.maps_show_marker) {
+            Log.d(LOG_TAG, "ELI:Menu->Show Marker");
+            Toast.makeText(getApplicationContext(), R.string.show_marker, Toast.LENGTH_SHORT).show();
+            return true;
+        } else if (id == R.id.maps_hide_marker) {
+            Log.d(LOG_TAG, "ELI:Menu->Hide Marker");
+            Toast.makeText(getApplicationContext(), R.string.hide_marker, Toast.LENGTH_SHORT).show();
+            return true;
+        } else {
+            Log.d(LOG_TAG, "ELI:Menu->Error");
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     /**

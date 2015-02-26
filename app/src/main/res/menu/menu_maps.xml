@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MapsActivity">
+
+    <item
+        android:id="@+id/maps_settings"
+        android:title="@string/settings"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/maps_show_time_rule"
+        android:title="@string/show_time_rule"
+        android:orderInCategory="200"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/maps_hide_time_rule"
+        android:title="@string/hide_time_rule"
+        android:orderInCategory="200"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/maps_show_marker"
+        android:title="@string/show_marker"
+        android:orderInCategory="300"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/maps_hide_marker"
+        android:title="@string/hide_marker"
+        android:orderInCategory="300"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/maps_quit"
+        android:title="@string/quit"
+        android:orderInCategory="500"
+        app:showAsAction="never" />
+</menu>
