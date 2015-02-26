@@ -2,7 +2,9 @@ package ca.ubc.icics.mss.cisc530;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -11,6 +13,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MapsActivity extends FragmentActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+
+    private GPSTracker mGPS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +27,25 @@ public class MapsActivity extends FragmentActivity {
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
+
+        if(mGPS==null){
+            mGPS = new GPSTracker(getApplicationContext());
+        }
+
+        if(mGPS.canGetLocation()){
+            LatLng loc = mGPS.getLatLng();
+            moveToLocation(loc);
+        }else{
+            Toast.makeText(getApplicationContext(), "GPS Setting error!", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        mGPS.stopUsingGPS();
     }
 
     /**
@@ -61,5 +84,15 @@ public class MapsActivity extends FragmentActivity {
      */
     private void setUpMap() {
         mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+    }
+
+
+    private void moveToLocation(LatLng location){
+        final LatLng VANCOUVER = new LatLng(49.2569684,-123.1239135);
+        final LatLng HAMBURG   = new LatLng(53.558, 9.927);
+        if (mMap != null) {
+            //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(VANCOUVER, 5));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(VANCOUVER, 5), 2000, null);
+        }
     }
 }
