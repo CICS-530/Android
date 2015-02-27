@@ -11,13 +11,13 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/maps_show_time_rule"
-        android:title="@string/show_time_rule"
+        android:id="@+id/maps_show_time_ruler"
+        android:title="@string/show_time_ruler"
         android:orderInCategory="200"
         app:showAsAction="never" />
     <item
-        android:id="@+id/maps_hide_time_rule"
-        android:title="@string/hide_time_rule"
+        android:id="@+id/maps_hide_time_ruler"
+        android:title="@string/hide_time_ruler"
         android:orderInCategory="200"
         app:showAsAction="never" />
 

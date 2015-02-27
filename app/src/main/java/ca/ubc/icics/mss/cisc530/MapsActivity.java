@@ -76,13 +76,13 @@ public class MapsActivity extends ActionBarActivity {
             Log.d(LOG_TAG, "ELI:Menu->Quit");
             Toast.makeText(getApplicationContext(), R.string.quit, Toast.LENGTH_SHORT).show();
             return true;
-        } else if (id == R.id.maps_show_time_rule) {
-            Log.d(LOG_TAG, "ELI:Menu->Show Time Rule");
-            Toast.makeText(getApplicationContext(), R.string.show_time_rule, Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.maps_show_time_ruler) {
+            Log.d(LOG_TAG, "ELI:Menu->Show Time Ruler");
+            Toast.makeText(getApplicationContext(), R.string.show_time_ruler, Toast.LENGTH_SHORT).show();
             return true;
-        } else if (id == R.id.maps_hide_time_rule) {
-            Log.d(LOG_TAG, "ELI:Menu->Hide Time Rule");
-            Toast.makeText(getApplicationContext(), R.string.hide_time_rule, Toast.LENGTH_SHORT).show();
+        } else if (id == R.id.maps_hide_time_ruler) {
+            Log.d(LOG_TAG, "ELI:Menu->Hide Time Ruler");
+            Toast.makeText(getApplicationContext(), R.string.hide_time_ruler, Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.maps_show_marker) {
             Log.d(LOG_TAG, "ELI:Menu->Show Marker");

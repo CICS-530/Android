@@ -8,9 +8,9 @@
 
     <string name="title_activity_maps">Map</string>
     <string name="loading_maps">Loading Map ...</string>
-    <string name="time_rule">Time Rule</string>
-    <string name="show_time_rule">Show Time Rule</string>
-    <string name="hide_time_rule">Hide Time Rule</string>
+    <string name="time_ruler">Time Ruler</string>
+    <string name="show_time_ruler">Show Time Ruler</string>
+    <string name="hide_time_ruler">Hide Time Ruler</string>
     <string name="show_marker">Show Marker</string>
     <string name="hide_marker">Hide Marker</string>
 
