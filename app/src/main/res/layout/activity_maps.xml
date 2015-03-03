@@ -22,7 +22,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/layout_time_ruler"
         android:layout_alignParentStart="false"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true">
 
         <Button
             android:layout_width="50dp"

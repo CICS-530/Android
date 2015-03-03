@@ -6,6 +6,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -21,10 +23,13 @@ public class MapsActivity extends ActionBarActivity {
 
     private GPSTracker mGPS;
 
+    private RelativeLayout mTimeRuler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        mTimeRuler = (RelativeLayout) findViewById(R.id.layout_time_ruler);
         setUpMapIfNeeded();
     }
 
@@ -78,10 +83,16 @@ public class MapsActivity extends ActionBarActivity {
             return true;
         } else if (id == R.id.maps_show_time_ruler) {
             Log.d(LOG_TAG, "ELI:Menu->Show Time Ruler");
+            if(mTimeRuler!=null){
+                mTimeRuler.setVisibility(View.VISIBLE);
+            }
             Toast.makeText(getApplicationContext(), R.string.show_time_ruler, Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.maps_hide_time_ruler) {
             Log.d(LOG_TAG, "ELI:Menu->Hide Time Ruler");
+            if(mTimeRuler!=null){
+                mTimeRuler.setVisibility(View.GONE);
+            }
             Toast.makeText(getApplicationContext(), R.string.hide_time_ruler, Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.maps_show_marker) {
