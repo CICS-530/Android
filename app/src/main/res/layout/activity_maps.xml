@@ -9,71 +9,56 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".MapsActivity">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools" android:layout_width="fill_parent"
+        android:layout_height="fill_parent" android:id="@+id/map"
+        tools:context="ca.ubc.icics.mss.cisc530.MapsActivity"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_weight="1"
+        android:layout_above="@+id/layout_time_ruler" />
+
+    <RelativeLayout
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+        android:layout_height="wrap_content"
+        android:id="@+id/layout_time_ruler"
+        android:layout_alignParentStart="false"
+        android:layout_alignParentBottom="true">
 
-        <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-            android:layout_height="match_parent" android:id="@+id/map"
-            tools:context="ca.ubc.icics.mss.cisc530.MapsActivity"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
-            android:layout_weight="1" />
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:text="&lt;"
+            android:id="@+id/btn_pre"
+            android:layout_weight="1"
+            android:layout_alignParentLeft="true" />
 
-        <LinearLayout
-            android:orientation="vertical"
+        <Button
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:text=">"
+            android:id="@+id/btn_aft"
+            android:layout_weight="1"
+            android:layout_alignParentRight="true" />
+
+        <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/layout_time_ruler"
-            android:layout_weight="4">
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="Message"
+            android:id="@+id/txt_message"
+            android:singleLine="true"
+            android:gravity="center"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/btn_pre"
+            android:layout_toLeftOf="@+id/btn_aft" />
 
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:text="Message"
-                android:id="@+id/txt_message"
-                android:singleLine="true"
-                android:gravity="center" />
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:minHeight="40dp">
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="fill_parent"
-                    android:text="&lt;"
-                    android:id="@+id/btn_pre"
-                    android:layout_weight="1" />
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/imageView"
-                    android:src="@mipmap/evolution"
-                    android:layout_weight="3" />
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="fill_parent"
-                    android:text=">"
-                    android:id="@+id/btn_aft"
-                    android:layout_weight="1" />
-            </LinearLayout>
-
-            <SeekBar
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/seekbar_time" />
-
-        </LinearLayout>
-
-
-    </LinearLayout>
+        <SeekBar
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/seekbar_time"
+            android:layout_toLeftOf="@+id/btn_aft"
+            android:layout_toRightOf="@+id/btn_pre"
+            android:layout_below="@+id/txt_message" />
+    </RelativeLayout>
 
 </RelativeLayout>
