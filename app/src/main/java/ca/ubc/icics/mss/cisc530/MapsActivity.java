@@ -13,7 +13,9 @@ import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends ActionBarActivity {
@@ -24,6 +26,8 @@ public class MapsActivity extends ActionBarActivity {
     private GPSTracker mGPS;
 
     private RelativeLayout mTimeRuler;
+
+    private Marker mMarkers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,10 +101,20 @@ public class MapsActivity extends ActionBarActivity {
             return true;
         } else if (id == R.id.maps_show_marker) {
             Log.d(LOG_TAG, "ELI:Menu->Show Marker");
+
+            final LatLng VANCOUVER = new LatLng(49.2569684,-123.1239135);
+            mMarkers = mMap.addMarker(new MarkerOptions()
+                    //.icon(BitmapDescriptorFactory.fromResource(R.drawable.house_flag))
+                    .icon(BitmapDescriptorFactory.defaultMarker())
+                    .anchor(0.0f, 1.0f) // Anchors the marker on the bottom left
+                    .position(VANCOUVER));
+
             Toast.makeText(getApplicationContext(), R.string.show_marker, Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.maps_hide_marker) {
             Log.d(LOG_TAG, "ELI:Menu->Hide Marker");
+            mMarkers.remove();
+            
             Toast.makeText(getApplicationContext(), R.string.hide_marker, Toast.LENGTH_SHORT).show();
             return true;
         } else {
