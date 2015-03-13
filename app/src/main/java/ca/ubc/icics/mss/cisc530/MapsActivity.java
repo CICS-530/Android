@@ -53,6 +53,7 @@ public class MapsActivity extends ActionBarActivity {
             Toast.makeText(getApplicationContext(), "GPS Setting error!", Toast.LENGTH_SHORT).show();
         }
 
+        new BackgroundDownloader().execute();   //start loading data in background thread
     }
 
     @Override
