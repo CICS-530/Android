@@ -1,13 +1,16 @@
 package ca.ubc.icics.mss.cisc530;
 
-import android.support.v4.app.FragmentActivity;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -18,6 +21,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+
 public class MapsActivity extends ActionBarActivity {
     final private String LOG_TAG = "MapsActivityLogTag";
 
@@ -25,21 +33,97 @@ public class MapsActivity extends ActionBarActivity {
 
     private GPSTracker mGPS;
 
-    private RelativeLayout mTimeRuler;
+    private RelativeLayout  mTimeRuler;
+    private SeekBar         mTimeSeekBar;
+    private int             mTimeSeekBarMax;
+    private Date            mTimeSeekBarStart;
+    private long            mTimeSeekBarInterval;
+    private Button          mTimeBtnPrev;
+    private Button          mTimeBtnNext;
+    private TextView        mTimeMsg;
+
+    private HashMap<LatLng, ArrayList<DisplaySample>> markerMatrix = new HashMap<LatLng, ArrayList<DisplaySample>>();
 
     private Marker mMarkers;
+
+    final private int ANIMATION_DURIATON = 2000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(LOG_TAG, "onCreate");
         setContentView(R.layout.activity_maps);
         mTimeRuler = (RelativeLayout) findViewById(R.id.layout_time_ruler);
+        mTimeSeekBar = (SeekBar)findViewById(R.id.seekbar_time);
+        mTimeBtnPrev = (Button) findViewById(R.id.btn_pre);
+        mTimeBtnNext = (Button) findViewById(R.id.btn_aft);
+        mTimeMsg = (TextView) findViewById(R.id.txt_message);
+
+        mTimeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mTimeBtnPrev.setEnabled(progress > 0);
+                mTimeBtnNext.setEnabled(progress < mTimeSeekBarMax);
+                if(mTimeSeekBarStart!=null) {
+                    mTimeMsg.setText(progress + "/" + mTimeSeekBarMax + " " + new Date(mTimeSeekBarStart.getTime() + progress * mTimeSeekBarInterval));
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        mTimeBtnPrev.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int cur = mTimeSeekBar.getProgress();
+                Log.d(LOG_TAG, "setOnClickListener() PREV@" + cur);
+                mTimeSeekBar.setProgress(cur - 1);
+            }
+        });
+
+        mTimeBtnNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int cur = mTimeSeekBar.getProgress();
+                Log.d(LOG_TAG, "setOnClickListener() NEXT@" + cur);
+                mTimeSeekBar.setProgress(cur + 1);
+            }
+        });
+
         setUpMapIfNeeded();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Log.d(LOG_TAG, "onConfigurationChanged");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(LOG_TAG, "onStop");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(LOG_TAG, "onDestroy");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(LOG_TAG, "onResume");
+
         setUpMapIfNeeded();
 
         if(mGPS==null){
@@ -54,11 +138,19 @@ public class MapsActivity extends ActionBarActivity {
         }
 
         new BackgroundDownloader().execute();   //start loading data in background thread
+
+        DataSample[] randomSamples = generateRandomDataSample(100);
+        if(randomSamples!=null) {
+            fillMarkerMatrixWithDataSample(randomSamples);
+        }
+
+        adjustTimeRuler();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d(LOG_TAG, "onPause");
 
         mGPS.stopUsingGPS();
     }
@@ -168,8 +260,102 @@ public class MapsActivity extends ActionBarActivity {
         final LatLng VANCOUVER = new LatLng(49.2569684,-123.1239135);
         final LatLng HAMBURG   = new LatLng(53.558, 9.927);
         if (mMap != null) {
-            //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(VANCOUVER, 5));
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(VANCOUVER, 5), 2000, null);
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(VANCOUVER, 5), ANIMATION_DURIATON, null);
+        }
+    }
+
+    private int fillMarkerMatrixWithDataSample(DataSample[] samples){
+        //clear previous data
+        for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : markerMatrix.entrySet()) {
+            oneLocation.getValue().clear();
+        }
+        markerMatrix.clear();
+
+        for(DataSample sample : samples){
+            if(!markerMatrix.containsKey(sample.location)){
+                ArrayList<DisplaySample> newLocation = new ArrayList<DisplaySample>();
+                newLocation.add(new DisplaySample(sample));
+                markerMatrix.put(sample.location, newLocation);
+            }else{
+                ArrayList<DisplaySample> oldLocation = markerMatrix.get(sample.location);
+                oldLocation.add(new DisplaySample(sample));
+            }
+        }
+
+        for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : markerMatrix.entrySet()) {
+            ArrayList<DisplaySample> list = oneLocation.getValue();
+            Collections.sort(list);
+        }
+
+        return markerMatrix.size();
+    }
+
+    private DataSample[] generateRandomDataSample(int size){
+        final LatLng VANCOUVER = new LatLng(49.2569684,-123.1239135);
+        final LatLng RICHMOND  = new LatLng(49.1717992,-123.1184624);
+        final LatLng BURNABY   = new LatLng(49.2380378,-122.9581694);
+
+        if(size>0){
+            DataSample[] dataSamples = new DataSample[size];
+            for(int i=0; i<size; i++){
+                dataSamples[i] = new DataSample();
+                if(i%3==0){
+                    dataSamples[i].name     = "VANCOUVER";
+                    dataSamples[i].details  = "DataSample-" + i + "/" + size;
+                    dataSamples[i].value    = Math.random();
+                    dataSamples[i].time     = new Date( new Date().getTime() - i*24*60*60*1000 );
+                    dataSamples[i].location = VANCOUVER;
+                }else if(i%3==1){
+                    dataSamples[i].name     = "RICHMOND";
+                    dataSamples[i].details  = "DataSample-" + i + "/" + size;
+                    dataSamples[i].value    = Math.random();
+                    dataSamples[i].time     = new Date( new Date().getTime() - i*24*60*60*1000 );
+                    dataSamples[i].location = RICHMOND;
+                }else{
+                    dataSamples[i].name     = "BURNABY";
+                    dataSamples[i].details  = "DataSample-" + i + "/" + size;
+                    dataSamples[i].value    = Math.random();
+                    dataSamples[i].time     = new Date( new Date().getTime() - i*24*60*60*1000 );
+                    dataSamples[i].location = BURNABY;
+                }
+            }
+            return dataSamples;
+        }else{
+            return null;
+        }
+    }
+
+    private void adjustTimeRuler(){
+        Date oldest=null, newest=null;
+        mTimeSeekBarMax = 0;
+
+        for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : markerMatrix.entrySet()) {
+            ArrayList<DisplaySample> list = oneLocation.getValue();
+            if(list.size()>0){
+                if(oldest==null){
+                    oldest = list.get(0).time;
+                }else if(list.get(0).time.compareTo(oldest)<0){ //the first time in list is older than oldest
+                    oldest = list.get(0).time;
+                }
+
+                if(newest==null){
+                    newest = list.get(list.size()-1).time;
+                }else if(list.get(list.size()-1).time.compareTo(newest)>0){ //the last time in list later than newest
+                    newest = list.get(list.size()-1).time;
+                }
+
+                if(list.size()>mTimeSeekBarMax){
+                    mTimeSeekBarMax = list.size();
+                }
+            }
+        }
+
+        mTimeSeekBarStart = oldest;
+        mTimeSeekBarInterval = ( newest.getTime() - oldest.getTime() )/ mTimeSeekBarMax;
+
+        if(mTimeSeekBar!=null){
+            mTimeSeekBar.setMax(mTimeSeekBarMax);
+            mTimeSeekBar.setProgress(mTimeSeekBarMax);
         }
     }
 }

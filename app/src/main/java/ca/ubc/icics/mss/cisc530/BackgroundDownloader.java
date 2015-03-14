@@ -3,6 +3,8 @@ package ca.ubc.icics.mss.cisc530;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 /**
  * Created by Elitward on 15-03-13.
  */
