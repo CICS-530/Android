@@ -28,4 +28,15 @@ public class DisplaySample extends  DataSample implements Comparable{
             return 0;
         }
     }
+
+    @Override
+    public String toString() {
+        return "DisplaySample{" +
+                "name=" + name +
+                " details=" + details +
+                " value=" + value +
+                " location=" + location.longitude + "/" + location.latitude +
+                " icon=" + icon +
+                '}';
+    }
 }

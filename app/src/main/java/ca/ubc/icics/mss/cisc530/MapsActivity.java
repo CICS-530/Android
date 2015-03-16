@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -42,7 +43,8 @@ public class MapsActivity extends ActionBarActivity {
     private Button          mTimeBtnNext;
     private TextView        mTimeMsg;
 
-    private HashMap<LatLng, ArrayList<DisplaySample>> markerMatrix = new HashMap<LatLng, ArrayList<DisplaySample>>();
+    private HashMap<LatLng, ArrayList<DisplaySample>> dataMatrix = new HashMap<LatLng, ArrayList<DisplaySample>>();
+    private HashMap<LatLng, Marker> markerMatrix = new HashMap<LatLng, Marker>();
 
     private Marker mMarkers;
 
@@ -65,7 +67,8 @@ public class MapsActivity extends ActionBarActivity {
                 mTimeBtnPrev.setEnabled(progress > 0);
                 mTimeBtnNext.setEnabled(progress < mTimeSeekBarMax);
                 if(mTimeSeekBarStart!=null) {
-                    mTimeMsg.setText(progress + "/" + mTimeSeekBarMax + " " + new Date(mTimeSeekBarStart.getTime() + progress * mTimeSeekBarInterval));
+                    //mTimeMsg.setText(progress + "/" + mTimeSeekBarMax + " " + new Date(mTimeSeekBarStart.getTime() + progress * mTimeSeekBarInterval));
+                    mTimeMsg.setText("" + new Date(mTimeSeekBarStart.getTime() + progress * mTimeSeekBarInterval));
                 }
             }
 
@@ -141,7 +144,7 @@ public class MapsActivity extends ActionBarActivity {
 
         DataSample[] randomSamples = generateRandomDataSample(100);
         if(randomSamples!=null) {
-            fillMarkerMatrixWithDataSample(randomSamples);
+            fillDataMatrixWithDataSample(randomSamples);
         }
 
         adjustTimeRuler();
@@ -195,18 +198,20 @@ public class MapsActivity extends ActionBarActivity {
         } else if (id == R.id.maps_show_marker) {
             Log.d(LOG_TAG, "ELI:Menu->Show Marker");
 
-            final LatLng VANCOUVER = new LatLng(49.2569684,-123.1239135);
-            mMarkers = mMap.addMarker(new MarkerOptions()
-                    //.icon(BitmapDescriptorFactory.fromResource(R.drawable.house_flag))
-                    .icon(BitmapDescriptorFactory.defaultMarker())
-                    .anchor(0.0f, 1.0f) // Anchors the marker on the bottom left
-                    .position(VANCOUVER));
+//            final LatLng VANCOUVER = new LatLng(49.2569684,-123.1239135);
+//            mMarkers = mMap.addMarker(new MarkerOptions()
+//                    //.icon(BitmapDescriptorFactory.fromResource(R.drawable.house_flag))
+//                    .icon(BitmapDescriptorFactory.defaultMarker())
+//                    .anchor(0.0f, 1.0f) // Anchors the marker on the bottom left
+//                    .position(VANCOUVER));
+            showDataMarkers();
 
             Toast.makeText(getApplicationContext(), R.string.show_marker, Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.maps_hide_marker) {
             Log.d(LOG_TAG, "ELI:Menu->Hide Marker");
-            mMarkers.remove();
+//            mMarkers.remove();
+            hideDataMarkers();
             
             Toast.makeText(getApplicationContext(), R.string.hide_marker, Toast.LENGTH_SHORT).show();
             return true;
@@ -264,30 +269,30 @@ public class MapsActivity extends ActionBarActivity {
         }
     }
 
-    private int fillMarkerMatrixWithDataSample(DataSample[] samples){
+    private int fillDataMatrixWithDataSample(DataSample[] samples){
         //clear previous data
-        for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : markerMatrix.entrySet()) {
+        for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : dataMatrix.entrySet()) {
             oneLocation.getValue().clear();
         }
-        markerMatrix.clear();
+        dataMatrix.clear();
 
         for(DataSample sample : samples){
-            if(!markerMatrix.containsKey(sample.location)){
+            if(!dataMatrix.containsKey(sample.location)){
                 ArrayList<DisplaySample> newLocation = new ArrayList<DisplaySample>();
                 newLocation.add(new DisplaySample(sample));
-                markerMatrix.put(sample.location, newLocation);
+                dataMatrix.put(sample.location, newLocation);
             }else{
-                ArrayList<DisplaySample> oldLocation = markerMatrix.get(sample.location);
+                ArrayList<DisplaySample> oldLocation = dataMatrix.get(sample.location);
                 oldLocation.add(new DisplaySample(sample));
             }
         }
 
-        for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : markerMatrix.entrySet()) {
+        for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : dataMatrix.entrySet()) {
             ArrayList<DisplaySample> list = oneLocation.getValue();
             Collections.sort(list);
         }
 
-        return markerMatrix.size();
+        return dataMatrix.size();
     }
 
     private DataSample[] generateRandomDataSample(int size){
@@ -329,23 +334,23 @@ public class MapsActivity extends ActionBarActivity {
         Date oldest=null, newest=null;
         mTimeSeekBarMax = 0;
 
-        for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : markerMatrix.entrySet()) {
-            ArrayList<DisplaySample> list = oneLocation.getValue();
-            if(list.size()>0){
+        for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : dataMatrix.entrySet()) {
+            ArrayList<DisplaySample> sampleList = oneLocation.getValue();
+            if(sampleList.size()>0){
                 if(oldest==null){
-                    oldest = list.get(0).time;
-                }else if(list.get(0).time.compareTo(oldest)<0){ //the first time in list is older than oldest
-                    oldest = list.get(0).time;
+                    oldest = sampleList.get(0).time;
+                }else if(sampleList.get(0).time.compareTo(oldest)<0){ //the first time in list is older than oldest
+                    oldest = sampleList.get(0).time;
                 }
 
                 if(newest==null){
-                    newest = list.get(list.size()-1).time;
-                }else if(list.get(list.size()-1).time.compareTo(newest)>0){ //the last time in list later than newest
-                    newest = list.get(list.size()-1).time;
+                    newest = sampleList.get(sampleList.size()-1).time;
+                }else if(sampleList.get(sampleList.size()-1).time.compareTo(newest)>0){ //the last time in list later than newest
+                    newest = sampleList.get(sampleList.size()-1).time;
                 }
 
-                if(list.size()>mTimeSeekBarMax){
-                    mTimeSeekBarMax = list.size();
+                if(sampleList.size()>mTimeSeekBarMax){
+                    mTimeSeekBarMax = sampleList.size();
                 }
             }
         }
@@ -357,5 +362,70 @@ public class MapsActivity extends ActionBarActivity {
             mTimeSeekBar.setMax(mTimeSeekBarMax);
             mTimeSeekBar.setProgress(mTimeSeekBarMax);
         }
+    }
+
+    private MarkerOptions getMarkerOptions(DisplaySample sample){
+        MarkerOptions markerOptions = new MarkerOptions()
+                .icon(getIconDescriptor(sample.value))
+                .anchor(0.0f, 1.0f) // Anchors the marker on the bottom left
+                .title(sample.name)
+                .snippet(sample.details)
+                .position(sample.location);
+        return markerOptions;
+    }
+
+    private BitmapDescriptor getIconDescriptor(Double value){
+        BitmapDescriptor icon = BitmapDescriptorFactory.defaultMarker();
+        //.icon(BitmapDescriptorFactory.fromResource(R.drawable.house_flag))
+        return icon;
+    }
+
+    private void showDataMarkers(){
+        //clear all displaying markers
+        hideDataMarkers();
+
+        updateDataMarkers();
+    }
+
+    private void updateDataMarkers(){
+
+        long point2Time = new Date().getTime();
+        if(mTimeSeekBar!=null && mTimeSeekBarStart!=null){
+            point2Time = mTimeSeekBarStart.getTime() + mTimeSeekBar.getProgress() * mTimeSeekBarInterval;
+        }
+
+        for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : dataMatrix.entrySet()) {
+            ArrayList<DisplaySample> sampleList = oneLocation.getValue();
+
+            if(sampleList.size()>0){
+                DisplaySample point2Sample = null;
+                for(int i=sampleList.size()-1; i>=0; i-- ) {
+                    point2Sample = sampleList.get(i);
+                    if(point2Sample.time.getTime()<=point2Time){
+                        break;
+                    }
+                }
+
+                LatLng location = sampleList.get(0).location;
+                if(!markerMatrix.containsKey(location)){
+                    Marker aMarker = mMap.addMarker(getMarkerOptions(point2Sample));
+                    markerMatrix.put(location, aMarker);
+                    Log.d(LOG_TAG, "updateDataMarkers() add marker:" + point2Sample);
+                }else{
+                    Marker theMarker = markerMatrix.get(location);
+                    theMarker.setTitle(point2Sample.name);
+                    theMarker.setSnippet(point2Sample.details);
+                    theMarker.setIcon(getIconDescriptor(point2Sample.value));
+                    Log.d(LOG_TAG, "updateDataMarkers() update marker:" + point2Sample);
+                }
+            }
+        }
+    }
+
+    private void hideDataMarkers(){
+        for (HashMap.Entry<LatLng, Marker> oneMarker : markerMatrix.entrySet()) {
+            oneMarker.getValue().remove();
+        }
+        markerMatrix.clear();
     }
 }
