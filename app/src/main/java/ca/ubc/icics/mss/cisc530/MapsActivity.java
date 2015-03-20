@@ -468,9 +468,13 @@ public class MapsActivity extends ActionBarActivity {
                     Log.d(LOG_TAG, "updateDataMarkers() add marker:" + point2Sample);
                 }else{
                     Marker theMarker = markerMatrix.get(location);
+                    boolean bInfo = theMarker.isInfoWindowShown();
                     theMarker.setTitle(point2Sample.name);
                     theMarker.setSnippet(point2Sample.details);
                     theMarker.setIcon(getIconDescriptor(point2Sample.value));
+                    if(bInfo) {
+                        theMarker.showInfoWindow();
+                    }
                     Log.d(LOG_TAG, "updateDataMarkers() update marker:" + point2Sample);
                 }
             }
