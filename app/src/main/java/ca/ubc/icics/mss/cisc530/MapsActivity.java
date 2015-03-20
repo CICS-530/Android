@@ -43,23 +43,33 @@ public class MapsActivity extends ActionBarActivity {
     private Button          mTimeBtnNext;
     private TextView        mTimeMsg;
 
+    private boolean     bShowTimeRuler;
+    private boolean     bShowMarker;
+
     private HashMap<LatLng, ArrayList<DisplaySample>> dataMatrix = new HashMap<LatLng, ArrayList<DisplaySample>>();
     private HashMap<LatLng, Marker> markerMatrix = new HashMap<LatLng, Marker>();
 
     private Marker mMarkers;
 
-    final private int ANIMATION_DURIATON = 2000;
+    final private int ANIMATION_DURATION = 2000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(LOG_TAG, "onCreate");
         setContentView(R.layout.activity_maps);
+
+        //initial display status
+        bShowTimeRuler = false;
+        bShowMarker = false;
+
         mTimeRuler = (RelativeLayout) findViewById(R.id.layout_time_ruler);
         mTimeSeekBar = (SeekBar)findViewById(R.id.seekbar_time);
         mTimeBtnPrev = (Button) findViewById(R.id.btn_pre);
         mTimeBtnNext = (Button) findViewById(R.id.btn_aft);
         mTimeMsg = (TextView) findViewById(R.id.txt_message);
+
+        adjustShowHideTimeRuler();
 
         mTimeSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -69,6 +79,9 @@ public class MapsActivity extends ActionBarActivity {
                 if(mTimeSeekBarStart!=null) {
                     //mTimeMsg.setText(progress + "/" + mTimeSeekBarMax + " " + new Date(mTimeSeekBarStart.getTime() + progress * mTimeSeekBarInterval));
                     mTimeMsg.setText("" + new Date(mTimeSeekBarStart.getTime() + progress * mTimeSeekBarInterval));
+                }
+                if(bShowMarker){
+                    updateDataMarkers();
                 }
             }
 
@@ -87,7 +100,7 @@ public class MapsActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 int cur = mTimeSeekBar.getProgress();
-                Log.d(LOG_TAG, "setOnClickListener() PREV@" + cur);
+                Log.d(LOG_TAG, "setOnClickListener() PREV@" + cur + "/" + mTimeSeekBarMax);
                 mTimeSeekBar.setProgress(cur - 1);
             }
         });
@@ -96,12 +109,22 @@ public class MapsActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 int cur = mTimeSeekBar.getProgress();
-                Log.d(LOG_TAG, "setOnClickListener() NEXT@" + cur);
+                Log.d(LOG_TAG, "setOnClickListener() NEXT@" + cur + "/" + mTimeSeekBarMax);
                 mTimeSeekBar.setProgress(cur + 1);
             }
         });
 
         setUpMapIfNeeded();
+    }
+
+    private void adjustShowHideTimeRuler() {
+        if(mTimeRuler!=null){
+            if(bShowTimeRuler){
+                mTimeRuler.setVisibility(View.VISIBLE);
+            }else{
+                mTimeRuler.setVisibility(View.GONE);
+            }
+        }
     }
 
     @Override
@@ -161,8 +184,37 @@ public class MapsActivity extends ActionBarActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        Log.d(LOG_TAG, "onCreateOptionsMenu");
         getMenuInflater().inflate(R.menu.menu_maps, menu);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem itemShow;
+        MenuItem itemHide;
+
+        itemShow = menu.findItem(R.id.maps_show_time_ruler);
+        itemHide = menu.findItem(R.id.maps_hide_time_ruler);
+        if(bShowTimeRuler){
+            itemShow.setVisible(false);
+            itemHide.setVisible(true);
+        }else{
+            itemShow.setVisible(true);
+            itemHide.setVisible(false);
+        }
+
+        itemShow = menu.findItem(R.id.maps_show_marker);
+        itemHide = menu.findItem(R.id.maps_hide_marker);
+        if(bShowMarker){
+            itemShow.setVisible(false);
+            itemHide.setVisible(true);
+        }else{
+            itemShow.setVisible(true);
+            itemHide.setVisible(false);
+        }
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -183,20 +235,19 @@ public class MapsActivity extends ActionBarActivity {
             return true;
         } else if (id == R.id.maps_show_time_ruler) {
             Log.d(LOG_TAG, "ELI:Menu->Show Time Ruler");
-            if(mTimeRuler!=null){
-                mTimeRuler.setVisibility(View.VISIBLE);
-            }
+            bShowTimeRuler = true;
+            adjustShowHideTimeRuler();
             Toast.makeText(getApplicationContext(), R.string.show_time_ruler, Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.maps_hide_time_ruler) {
             Log.d(LOG_TAG, "ELI:Menu->Hide Time Ruler");
-            if(mTimeRuler!=null){
-                mTimeRuler.setVisibility(View.GONE);
-            }
+            bShowTimeRuler = false;
+            adjustShowHideTimeRuler();
             Toast.makeText(getApplicationContext(), R.string.hide_time_ruler, Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.maps_show_marker) {
             Log.d(LOG_TAG, "ELI:Menu->Show Marker");
+            bShowMarker = true;
 
 //            final LatLng VANCOUVER = new LatLng(49.2569684,-123.1239135);
 //            mMarkers = mMap.addMarker(new MarkerOptions()
@@ -210,6 +261,7 @@ public class MapsActivity extends ActionBarActivity {
             return true;
         } else if (id == R.id.maps_hide_marker) {
             Log.d(LOG_TAG, "ELI:Menu->Hide Marker");
+            bShowMarker = false;
 //            mMarkers.remove();
             hideDataMarkers();
             
@@ -265,7 +317,7 @@ public class MapsActivity extends ActionBarActivity {
         final LatLng VANCOUVER = new LatLng(49.2569684,-123.1239135);
         final LatLng HAMBURG   = new LatLng(53.558, 9.927);
         if (mMap != null) {
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(VANCOUVER, 5), ANIMATION_DURIATON, null);
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(VANCOUVER, 5), ANIMATION_DURATION, null);
         }
     }
 
@@ -308,19 +360,19 @@ public class MapsActivity extends ActionBarActivity {
                     dataSamples[i].name     = "VANCOUVER";
                     dataSamples[i].details  = "DataSample-" + i + "/" + size;
                     dataSamples[i].value    = Math.random();
-                    dataSamples[i].time     = new Date( new Date().getTime() - i*24*60*60*1000 );
+                    dataSamples[i].time     = new Date( new Date().getTime() - (long)i*24*60*60*1000 );
                     dataSamples[i].location = VANCOUVER;
                 }else if(i%3==1){
                     dataSamples[i].name     = "RICHMOND";
                     dataSamples[i].details  = "DataSample-" + i + "/" + size;
                     dataSamples[i].value    = Math.random();
-                    dataSamples[i].time     = new Date( new Date().getTime() - i*24*60*60*1000 );
+                    dataSamples[i].time     = new Date( new Date().getTime() - (long)i*24*60*60*1000 );
                     dataSamples[i].location = RICHMOND;
                 }else{
                     dataSamples[i].name     = "BURNABY";
                     dataSamples[i].details  = "DataSample-" + i + "/" + size;
                     dataSamples[i].value    = Math.random();
-                    dataSamples[i].time     = new Date( new Date().getTime() - i*24*60*60*1000 );
+                    dataSamples[i].time     = new Date( new Date().getTime() - (long)i*24*60*60*1000 );
                     dataSamples[i].location = BURNABY;
                 }
             }
@@ -392,6 +444,7 @@ public class MapsActivity extends ActionBarActivity {
         long point2Time = new Date().getTime();
         if(mTimeSeekBar!=null && mTimeSeekBarStart!=null){
             point2Time = mTimeSeekBarStart.getTime() + mTimeSeekBar.getProgress() * mTimeSeekBarInterval;
+            Log.d(LOG_TAG, "updateDataMarkers() point2Time=" + point2Time);
         }
 
         for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : dataMatrix.entrySet()) {
@@ -405,6 +458,8 @@ public class MapsActivity extends ActionBarActivity {
                         break;
                     }
                 }
+
+                Log.d(LOG_TAG, "updateDataMarkers() point2Sample=" + point2Sample);
 
                 LatLng location = sampleList.get(0).location;
                 if(!markerMatrix.containsKey(location)){

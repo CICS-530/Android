@@ -35,6 +35,7 @@ public class DisplaySample extends  DataSample implements Comparable{
                 "name=" + name +
                 " details=" + details +
                 " value=" + value +
+                " time=" + time +
                 " location=" + location.longitude + "/" + location.latitude +
                 " icon=" + icon +
                 '}';

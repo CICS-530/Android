@@ -21,7 +21,7 @@ public class BackgroundDownloader extends AsyncTask<Void, Integer, Boolean>{
         Log.d(LOG_TAG, "ELI: JSON-Test:" + json);
 
         for(int i=0; i<10; i++){
-            publishProgress(i);
+            //publishProgress(i);
         }
         return null;
     }
