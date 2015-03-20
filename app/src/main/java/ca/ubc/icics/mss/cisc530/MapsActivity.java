@@ -46,6 +46,8 @@ public class MapsActivity extends ActionBarActivity {
     private boolean     bShowTimeRuler;
     private boolean     bShowMarker;
 
+    private double  dValueMax, dValueMix;
+
     private HashMap<LatLng, ArrayList<DisplaySample>> dataMatrix = new HashMap<LatLng, ArrayList<DisplaySample>>();
     private HashMap<LatLng, Marker> markerMatrix = new HashMap<LatLng, Marker>();
 
@@ -328,7 +330,21 @@ public class MapsActivity extends ActionBarActivity {
         }
         dataMatrix.clear();
 
+        if(samples.length>0){   //init
+            dValueMax = samples[0].value;
+            dValueMix = samples[0].value;
+        }else{
+            return 0;
+        }
+
         for(DataSample sample : samples){
+            if(sample.value>dValueMax){
+                dValueMax = sample.value;
+            }
+            if(sample.value<dValueMix){
+                dValueMix = sample.value;
+            }
+
             if(!dataMatrix.containsKey(sample.location)){
                 ArrayList<DisplaySample> newLocation = new ArrayList<DisplaySample>();
                 newLocation.add(new DisplaySample(sample));
@@ -422,6 +438,7 @@ public class MapsActivity extends ActionBarActivity {
                 .anchor(0.0f, 1.0f) // Anchors the marker on the bottom left
                 .title(sample.name)
                 .snippet(sample.details)
+                .alpha(getAlphaValue(sample.value))
                 .position(sample.location);
         return markerOptions;
     }
@@ -430,6 +447,10 @@ public class MapsActivity extends ActionBarActivity {
         BitmapDescriptor icon = BitmapDescriptorFactory.defaultMarker();
         //.icon(BitmapDescriptorFactory.fromResource(R.drawable.house_flag))
         return icon;
+    }
+
+    private float getAlphaValue(Double value){
+        return (float) ((float) 0.1 + 0.9 * (value-dValueMix)/dValueMax);
     }
 
     private void showDataMarkers(){
@@ -472,6 +493,7 @@ public class MapsActivity extends ActionBarActivity {
                     theMarker.setTitle(point2Sample.name);
                     theMarker.setSnippet(point2Sample.details);
                     theMarker.setIcon(getIconDescriptor(point2Sample.value));
+                    theMarker.setAlpha(getAlphaValue(point2Sample.value));
                     if(bInfo) {
                         theMarker.showInfoWindow();
                     }
