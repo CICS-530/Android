@@ -16,11 +16,36 @@ import java.util.Date;
  */
 public class DataSample implements Serializable{
     //raw info from web server
+    String station;
     String name;
     String details;
     Double value;
+    String units;
     Date   time;
     transient LatLng location;      //it's not Serializable but it is Parcelable
+
+    public DataSample(){
+    }
+
+    public DataSample(String station, String name, String details, Double value, String units, Date time, LatLng location) {
+        this.station = station;
+        this.name = name;
+        this.details = details;
+        this.value = value;
+        this.units = units;
+        this.time = time;
+        this.location = location;
+    }
+
+    public DataSample(String station, String name, String details, Double value, String units, long time, double lat, double lng) {
+        this.station = station;
+        this.name = name;
+        this.details = details;
+        this.value = value;
+        this.units = units;
+        this.time = new Date(time);
+        this.location = new LatLng(lat, lng);
+    }
 
     public static byte[] seralize(DataSample sample) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

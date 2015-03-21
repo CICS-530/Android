@@ -11,12 +11,16 @@ public class DisplaySample extends  DataSample implements Comparable{
     //additional info
     BitmapDescriptor icon;
 
+
+
     DisplaySample(DataSample sample){
         this.name     = sample.name;
         this.details  = sample.details;
         this.value    = sample.value;
         this.time     = sample.time;
         this.location = sample.location;
+        this.station  = sample.station;
+        this.units    = sample.units;
     }
 
     @Override
