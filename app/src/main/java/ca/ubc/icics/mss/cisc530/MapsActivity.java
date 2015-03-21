@@ -51,7 +51,8 @@ public class MapsActivity extends ActionBarActivity {
     private HashMap<LatLng, ArrayList<DisplaySample>> dataMatrix = new HashMap<LatLng, ArrayList<DisplaySample>>();
     private HashMap<LatLng, Marker> markerMatrix = new HashMap<LatLng, Marker>();
 
-    private Marker mMarkers;
+    private DbManager dbManager;
+    //private Marker mMarkers;
 
     final private int ANIMATION_DURATION = 2000;
 
@@ -60,6 +61,8 @@ public class MapsActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         Log.d(LOG_TAG, "onCreate");
         setContentView(R.layout.activity_maps);
+
+        dbManager = DbManager.getInstance(this);
 
         //initial display status
         bShowTimeRuler = false;
@@ -167,10 +170,15 @@ public class MapsActivity extends ActionBarActivity {
 
         new BackgroundDownloader().execute();   //start loading data in background thread
 
-        DataSample[] randomSamples = generateRandomDataSample(100);
+        DataSample[] randomSamples = generateRandomDataSample(10);
         if(randomSamples!=null) {
             fillDataMatrixWithDataSample(randomSamples);
         }
+
+        for(DataSample sample : randomSamples){
+            dbManager.add(sample);
+        }
+        DataSample[] confirmSample = dbManager.get();
 
         adjustTimeRuler();
     }
