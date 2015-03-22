@@ -380,20 +380,42 @@ public class MapsActivity extends ActionBarActivity {
             DataSample[] dataSamples = new DataSample[size];
             for(int i=0; i<size; i++){
                 dataSamples[i] = new DataSample();
-                if(i%3==0){
-                    dataSamples[i].name     = "VANCOUVER";
+                if(i%5==0){
+                    dataSamples[i].station  = "VANCOUVER";
+                    dataSamples[i].units    = "ppb";
+                    dataSamples[i].name     = "NO2";
                     dataSamples[i].details  = "DataSample-" + i + "/" + size;
                     dataSamples[i].value    = Math.random();
                     dataSamples[i].time     = new Date( new Date().getTime() - (long)i*24*60*60*1000 );
                     dataSamples[i].location = VANCOUVER;
-                }else if(i%3==1){
-                    dataSamples[i].name     = "RICHMOND";
+                }else if(i%5==1){
+                    dataSamples[i].station  = "RICHMOND";
+                    dataSamples[i].units    = "ppb";
+                    dataSamples[i].name     = "NO2";
                     dataSamples[i].details  = "DataSample-" + i + "/" + size;
                     dataSamples[i].value    = Math.random();
                     dataSamples[i].time     = new Date( new Date().getTime() - (long)i*24*60*60*1000 );
                     dataSamples[i].location = RICHMOND;
+                }else if(i%5==2){
+                    dataSamples[i].station  = "BURNABY";
+                    dataSamples[i].units    = "ppb";
+                    dataSamples[i].name     = "NO2";
+                    dataSamples[i].details  = "DataSample-" + i + "/" + size;
+                    dataSamples[i].value    = Math.random();
+                    dataSamples[i].time     = new Date( new Date().getTime() - (long)i*24*60*60*1000 );
+                    dataSamples[i].location = BURNABY;
+                }else if(i%5==3){
+                    dataSamples[i].station  = "BURNABY";
+                    dataSamples[i].units    = "ug/m3s";
+                    dataSamples[i].name     = "PM25";
+                    dataSamples[i].details  = "DataSample-" + i + "/" + size;
+                    dataSamples[i].value    = Math.random();
+                    dataSamples[i].time     = new Date( new Date().getTime() - (long)i*24*60*60*1000 );
+                    dataSamples[i].location = BURNABY;
                 }else{
-                    dataSamples[i].name     = "BURNABY";
+                    dataSamples[i].station  = "BURNABY";
+                    dataSamples[i].units    = "ug/m3s";
+                    dataSamples[i].name     = "PM10";
                     dataSamples[i].details  = "DataSample-" + i + "/" + size;
                     dataSamples[i].value    = Math.random();
                     dataSamples[i].time     = new Date( new Date().getTime() - (long)i*24*60*60*1000 );
