@@ -1,5 +1,7 @@
 package ca.ubc.icics.mss.cisc530;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
@@ -53,6 +55,9 @@ public class MapsActivity extends ActionBarActivity {
 
     private DbManager dbManager;
     //private Marker mMarkers;
+
+    private String[]   mTypeNames;
+    private String     mMarkingType;
 
     final private int ANIMATION_DURATION = 2000;
 
@@ -122,16 +127,6 @@ public class MapsActivity extends ActionBarActivity {
         setUpMapIfNeeded();
     }
 
-    private void adjustShowHideTimeRuler() {
-        if(mTimeRuler!=null){
-            if(bShowTimeRuler){
-                mTimeRuler.setVisibility(View.VISIBLE);
-            }else{
-                mTimeRuler.setVisibility(View.GONE);
-            }
-        }
-    }
-
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -171,11 +166,11 @@ public class MapsActivity extends ActionBarActivity {
         new BackgroundDownloader().execute();   //start loading data in background thread
 
         DataSample[] randomSamples = generateRandomDataSample(10);
-        if(randomSamples!=null) {
-            fillDataMatrixWithDataSample(randomSamples);
-        }
+        //if(randomSamples!=null) {
+        //    fillDataMatrixWithDataSample(randomSamples);
+        //    adjustTimeRuler();
+        //}
 
-        adjustTimeRuler();
 
         for(DataSample sample : randomSamples){
             dbManager.add(sample);
@@ -268,8 +263,7 @@ public class MapsActivity extends ActionBarActivity {
             return true;
         } else if (id == R.id.maps_show_marker) {
             Log.d(LOG_TAG, "ELI:Menu->Show Marker");
-            bShowMarker = true;
-            showDataMarkers();
+            showSelectionByName();
             Toast.makeText(getApplicationContext(), R.string.show_marker, Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.maps_hide_marker) {
@@ -323,6 +317,15 @@ public class MapsActivity extends ActionBarActivity {
         mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
     }
 
+    private void adjustShowHideTimeRuler() {
+        if(mTimeRuler!=null){
+            if(bShowTimeRuler){
+                mTimeRuler.setVisibility(View.VISIBLE);
+            }else{
+                mTimeRuler.setVisibility(View.GONE);
+            }
+        }
+    }
 
     private void moveToLocation(LatLng location){
         final LatLng VANCOUVER = new LatLng(49.2569684,-123.1239135);
@@ -463,12 +466,20 @@ public class MapsActivity extends ActionBarActivity {
         }
     }
 
+    private String getSnippet(DataSample sample){
+        return sample.name + ": " + sample.value + " " + sample.units;
+    }
+
+    private String getSnippet(DisplaySample sample){
+        return getSnippet((DataSample)sample);
+    }
+
     private MarkerOptions getMarkerOptions(DisplaySample sample){
         MarkerOptions markerOptions = new MarkerOptions()
                 .icon(getIconDescriptor(sample.value))
                 .anchor(0.0f, 1.0f) // Anchors the marker on the bottom left
-                .title(sample.name)
-                .snippet(sample.details)
+                .title(sample.station)
+                .snippet(getSnippet(sample))
                 .alpha(getAlphaValue(sample.value))
                 .position(sample.location);
         return markerOptions;
@@ -482,6 +493,47 @@ public class MapsActivity extends ActionBarActivity {
 
     private float getAlphaValue(Double value){
         return (float) ((float) 0.1 + 0.9 * (value-dValueMix)/dValueMax);
+    }
+
+    private void showSelectionByName(){
+        int selectionIdx = -1;
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+
+        mTypeNames = dbManager.getNames();
+        for(int i=0; i<mTypeNames.length; i++){
+            if(mMarkingType!=null && mTypeNames[i].compareTo(mMarkingType)==0){
+                selectionIdx = i;
+            }
+        }
+
+        AlertDialog.Builder builder = adb.setSingleChoiceItems(mTypeNames, selectionIdx, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.d(LOG_TAG, "showSelectionByName() setSingleChoiceItems onClick which=" + which);
+                mMarkingType = mTypeNames[which];
+            }
+        });
+        adb.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Log.d(LOG_TAG, "showSelectionByName() setPositiveButton onClick which=" + which);
+
+                //refresh marker
+                DataSample[] samples = dbManager.get(mMarkingType);
+                if(samples.length>0){
+                    fillDataMatrixWithDataSample(samples);
+                    adjustTimeRuler();
+
+                    bShowMarker = true;
+                    showDataMarkers();
+                }else{
+                    Toast.makeText(getApplicationContext(), "Not enough samples", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        //adb.setNegativeButton(R.string.cancel, null);
+        adb.setTitle(R.string.select);
+        adb.show();
     }
 
     private void showDataMarkers(){
@@ -521,8 +573,8 @@ public class MapsActivity extends ActionBarActivity {
                 }else{
                     Marker theMarker = markerMatrix.get(location);
                     boolean bInfo = theMarker.isInfoWindowShown();
-                    theMarker.setTitle(point2Sample.name);
-                    theMarker.setSnippet(point2Sample.details);
+                    theMarker.setTitle(point2Sample.station);
+                    theMarker.setSnippet(getSnippet(point2Sample));
                     theMarker.setIcon(getIconDescriptor(point2Sample.value));
                     theMarker.setAlpha(getAlphaValue(point2Sample.value));
                     if(bInfo) {

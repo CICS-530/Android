@@ -14,4 +14,8 @@
     <string name="show_marker">Show Marker</string>
     <string name="hide_marker">Hide Marker</string>
 
+    <string name="select">Select</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+
 </resources>

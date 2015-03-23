@@ -3,7 +3,9 @@ package ca.ubc.icics.mss.cisc530;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -14,6 +16,8 @@ import java.util.Date;
  * Created by Elitward on 15-03-20.
  */
 public class DbManager {
+
+    private final String LOG_TAG = "DbHelperLogTag";
 
     private static DbManager instance = null;
 
