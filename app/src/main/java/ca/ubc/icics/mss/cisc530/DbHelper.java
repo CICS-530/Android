@@ -44,6 +44,7 @@ public class DbHelper extends SQLiteOpenHelper{
             sql += getDataSampleColumnName(def) + " " + getDataSampleColumnType(def) + ", ";
         }
         sql+= "PRIMARY KEY (" +
+        //sql+= "UNIQUE (" +
                 getDataSampleColumnName(DataSampleDef.LATITUDE)   + ", " +
                 getDataSampleColumnName(DataSampleDef.LONGITUDE)  + ", " +
                 getDataSampleColumnName(DataSampleDef.TIME)       + ", " +

@@ -38,14 +38,14 @@ public class DbManager {
         //cv.put(DbHelper.COLUMN_NAME, buf);
         for(DataSampleDef def: DataSampleDef.values()){
             switch (def){
-                case STATION:   cv.put(DbHelper.getDataSampleColumnName(def), sample.station);          break;
-                case NAME:      cv.put(DbHelper.getDataSampleColumnName(def), sample.name);             break;
-                case DETAILS:   cv.put(DbHelper.getDataSampleColumnName(def), sample.details);          break;
-                case VALUE:     cv.put(DbHelper.getDataSampleColumnName(def), sample.value);            break;
-                case UNITS:     cv.put(DbHelper.getDataSampleColumnName(def), sample.units);            break;
-                case TIME:      cv.put(DbHelper.getDataSampleColumnName(def), sample.time.getTime());   break;
-                case LATITUDE:  cv.put(DbHelper.getDataSampleColumnName(def), sample.location.latitude);break;
-                case LONGITUDE: cv.put(DbHelper.getDataSampleColumnName(def), sample.location.longitude);break;
+                case STATION:   cv.put(DbHelper.getDataSampleColumnName(def), sample.station);              break;
+                case NAME:      cv.put(DbHelper.getDataSampleColumnName(def), sample.name);                 break;
+                case DETAILS:   cv.put(DbHelper.getDataSampleColumnName(def), sample.details);              break;
+                case VALUE:     cv.put(DbHelper.getDataSampleColumnName(def), sample.value);                break;
+                case UNITS:     cv.put(DbHelper.getDataSampleColumnName(def), sample.units);                break;
+                case TIME:      cv.put(DbHelper.getDataSampleColumnName(def), sample.time.getTime());       break;
+                case LATITUDE:  cv.put(DbHelper.getDataSampleColumnName(def), sample.location.latitude);    break;
+                case LONGITUDE: cv.put(DbHelper.getDataSampleColumnName(def), sample.location.longitude);   break;
             }
         }
         long ret = db.insert(DbHelper.TABLE_NAME, null, cv);
@@ -56,11 +56,15 @@ public class DbManager {
         }
     }
 
-    public DataSample[] get(){
+    public DataSample[] get(String name){
         ArrayList<DataSample> list = new ArrayList<DataSample>();
-        //String[] columns = {DbHelper.COLUMN_NAME};
-        //Cursor c = db.query(DbHelper.TABLE_NAME, columns, null, null, null, null, null);
-        Cursor c = db.query(DbHelper.TABLE_NAME, null, null, null, null, null, null);
+        String selection = null;
+        String[] selectionArgs = null;
+        if(name!=null){
+            selection = DbHelper.getDataSampleColumnName(DataSampleDef.NAME) + "=?";
+            selectionArgs = new String[]{name};
+        }
+        Cursor c = db.query(DbHelper.TABLE_NAME, null, selection, selectionArgs, null, null, null);
         while(c.moveToNext()){
             //byte[] array = c.getBlob(0);
             //DataSample sample = DataSample.deseralize(array);
@@ -75,8 +79,8 @@ public class DbManager {
                     case VALUE:     sample.value   = c.getDouble(col++);        break;
                     case UNITS:     sample.units   = c.getString(col++);        break;
                     case TIME:      sample.time    = new Date(c.getLong(col++));break;
-                    case LATITUDE:  lat = c.getLong(col++);                     break;
-                    case LONGITUDE: lng = c.getLong(col++);                     break;
+                    case LATITUDE:  lat = c.getDouble(col++);                   break;
+                    case LONGITUDE: lng = c.getDouble(col++);                   break;
                 }
             }
             if(lng!=0 && lat!=0){
@@ -88,6 +92,23 @@ public class DbManager {
         if(list.size()>0){
             DataSample[] array = new DataSample[list.size()];
             return list.toArray(array);
+        }else{
+            return null;
+        }
+    }
+
+    public String[] getNames(){
+        String name_col = DbHelper.getDataSampleColumnName(DataSampleDef.NAME);
+        String[] columns = {name_col};
+        Cursor c = db.query(DbHelper.TABLE_NAME, columns, null, null, name_col, null, null);
+        ArrayList<String> names = new ArrayList<String>();
+        while(c.moveToNext()){
+            String one = c.getString(0);
+            names.add(one);
+        }
+        if(names.size()>0){
+            String[] array = new String[names.size()];
+            return names.toArray(array);
         }else{
             return null;
         }

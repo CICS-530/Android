@@ -165,7 +165,7 @@ public class MapsActivity extends ActionBarActivity {
             LatLng loc = mGPS.getLatLng();
             moveToLocation(loc);
         }else{
-            Toast.makeText(getApplicationContext(), "GPS Setting error!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "GPS Setting Error!", Toast.LENGTH_SHORT).show();
         }
 
         new BackgroundDownloader().execute();   //start loading data in background thread
@@ -175,12 +175,23 @@ public class MapsActivity extends ActionBarActivity {
             fillDataMatrixWithDataSample(randomSamples);
         }
 
+        adjustTimeRuler();
+
         for(DataSample sample : randomSamples){
             dbManager.add(sample);
         }
-        DataSample[] confirmSample = dbManager.get();
+//        DataSample[] confirmSample = dbManager.get(null);
 
-        adjustTimeRuler();
+//        String[] names = dbManager.getNames();
+//
+//        DataSample[] namedSample = dbManager.get(names[0]);
+
+        DataSample[] databaseSample = dbManager.get(null);
+        for( DataSample s : databaseSample ){
+            boolean suc = dbManager.add(s);
+        }
+
+        DataSample[] databaseSample2 = dbManager.get(null);
     }
 
     @Override
@@ -258,23 +269,13 @@ public class MapsActivity extends ActionBarActivity {
         } else if (id == R.id.maps_show_marker) {
             Log.d(LOG_TAG, "ELI:Menu->Show Marker");
             bShowMarker = true;
-
-//            final LatLng VANCOUVER = new LatLng(49.2569684,-123.1239135);
-//            mMarkers = mMap.addMarker(new MarkerOptions()
-//                    //.icon(BitmapDescriptorFactory.fromResource(R.drawable.house_flag))
-//                    .icon(BitmapDescriptorFactory.defaultMarker())
-//                    .anchor(0.0f, 1.0f) // Anchors the marker on the bottom left
-//                    .position(VANCOUVER));
             showDataMarkers();
-
             Toast.makeText(getApplicationContext(), R.string.show_marker, Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.maps_hide_marker) {
             Log.d(LOG_TAG, "ELI:Menu->Hide Marker");
             bShowMarker = false;
-//            mMarkers.remove();
             hideDataMarkers();
-            
             Toast.makeText(getApplicationContext(), R.string.hide_marker, Toast.LENGTH_SHORT).show();
             return true;
         } else {
