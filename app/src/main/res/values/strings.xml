@@ -6,7 +6,7 @@
     <string name="settings">Settings</string>
     <string name="quit">Quit</string>
 
-    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps">Chemicals Map</string>
     <string name="loading_maps">Loading Map ...</string>
     <string name="time_ruler">Time Ruler</string>
     <string name="show_time_ruler">Show Time Ruler</string>
