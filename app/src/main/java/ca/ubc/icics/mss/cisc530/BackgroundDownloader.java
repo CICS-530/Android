@@ -22,7 +22,8 @@ public class BackgroundDownloader extends AsyncTask<Void, Integer, Boolean>{
         Log.d(LOG_TAG, "doInBackground() with" + params);
 
         HttpJSONParser jsonParser = new HttpJSONParser();
-        jsonParser.setHttpURL("https://pollutantapi-aaroncheng.rhcloud.com/realtime/stationdata");
+        //jsonParser.setHttpURL("https://pollutantapi-aaroncheng.rhcloud.com/realtime/stationdata");
+        jsonParser.setHttpURL("http://pollutantapi-aaroncheng.rhcloud.com/reading/latestData/1");
         String json = jsonParser.getJSonString();
         Log.d(LOG_TAG, "ELI: JSON-Test:" + json);
 
