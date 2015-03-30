@@ -3,10 +3,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MapsActivity">
-
+<!--
     <item
         android:id="@+id/maps_settings"
         android:title="@string/settings"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+-->
+    <item
+        android:id="@+id/maps_here"
+        android:title="@string/here"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/maps_get_data"
+        android:title="@string/get_data"
         android:orderInCategory="100"
         app:showAsAction="never" />
 
@@ -24,6 +36,16 @@
     <item
         android:id="@+id/maps_show_marker"
         android:title="@string/show_marker"
+        android:orderInCategory="300"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/maps_mix_marker"
+        android:title="@string/mix_marker"
+        android:orderInCategory="300"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/maps_reset_marker"
+        android:title="@string/reset_marker"
         android:orderInCategory="300"
         app:showAsAction="never" />
     <item

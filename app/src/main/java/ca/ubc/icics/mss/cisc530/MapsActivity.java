@@ -155,38 +155,6 @@ public class MapsActivity extends ActionBarActivity {
         if(mGPS==null){
             mGPS = new GPSTracker(getApplicationContext());
         }
-
-        if(mGPS.canGetLocation()){
-            LatLng loc = mGPS.getLatLng();
-            moveToLocation(loc);
-        }else{
-            Toast.makeText(getApplicationContext(), "GPS Setting Error!", Toast.LENGTH_SHORT).show();
-        }
-
-        new BackgroundDownloader().execute();   //start loading data in background thread
-
-        DataSample[] randomSamples = generateRandomDataSample(10);
-        //if(randomSamples!=null) {
-        //    fillDataMatrixWithDataSample(randomSamples);
-        //    adjustTimeRuler();
-        //}
-
-
-        for(DataSample sample : randomSamples){
-            dbManager.add(sample);
-        }
-//        DataSample[] confirmSample = dbManager.get(null);
-
-//        String[] names = dbManager.getNames();
-//
-//        DataSample[] namedSample = dbManager.get(names[0]);
-
-        DataSample[] databaseSample = dbManager.get(null);
-        for( DataSample s : databaseSample ){
-            boolean suc = dbManager.add(s);
-        }
-
-        DataSample[] databaseSample2 = dbManager.get(null);
     }
 
     @Override
@@ -210,16 +178,6 @@ public class MapsActivity extends ActionBarActivity {
         MenuItem itemShow;
         MenuItem itemHide;
 
-        itemShow = menu.findItem(R.id.maps_show_time_ruler);
-        itemHide = menu.findItem(R.id.maps_hide_time_ruler);
-        if(bShowTimeRuler){
-            itemShow.setVisible(false);
-            itemHide.setVisible(true);
-        }else{
-            itemShow.setVisible(true);
-            itemHide.setVisible(false);
-        }
-
         itemShow = menu.findItem(R.id.maps_show_marker);
         itemHide = menu.findItem(R.id.maps_hide_marker);
         if(bShowMarker){
@@ -227,6 +185,27 @@ public class MapsActivity extends ActionBarActivity {
             itemHide.setVisible(true);
         }else{
             itemShow.setVisible(true);
+            itemHide.setVisible(false);
+        }
+
+        itemShow = menu.findItem(R.id.maps_show_time_ruler);
+        itemHide = menu.findItem(R.id.maps_hide_time_ruler);
+        if(bShowMarker){
+            menu.findItem(R.id.maps_mix_marker).setVisible(true);
+            menu.findItem(R.id.maps_reset_marker).setVisible(true);
+
+            if(bShowTimeRuler){
+                itemShow.setVisible(false);
+                itemHide.setVisible(true);
+            }else{
+                itemShow.setVisible(true);
+                itemHide.setVisible(false);
+            }
+        }else{
+            menu.findItem(R.id.maps_mix_marker).setVisible(false);
+            menu.findItem(R.id.maps_reset_marker).setVisible(false);
+
+            itemShow.setVisible(false);
             itemHide.setVisible(false);
         }
 
@@ -241,14 +220,27 @@ public class MapsActivity extends ActionBarActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
+        /*
         if (id == R.id.maps_settings) {
             Log.d(LOG_TAG, "ELI:Menu->Settings");
             Toast.makeText(getApplicationContext(), R.string.settings, Toast.LENGTH_SHORT).show();
             return true;
-        } else if (id == R.id.maps_quit) {
+        } else
+        */
+        if (id == R.id.maps_quit) {
             Log.d(LOG_TAG, "ELI:Menu->Quit");
+            System.exit(0);
             Toast.makeText(getApplicationContext(), R.string.quit, Toast.LENGTH_SHORT).show();
             return true;
+        } else if (id == R.id.maps_here) {
+            if(mGPS.canGetLocation()){
+                LatLng loc = mGPS.getLatLng();
+                moveToLocation(loc);
+            }else{
+                Toast.makeText(getApplicationContext(), "GPS Setting Error!", Toast.LENGTH_SHORT).show();
+            }
+        } else if (id == R.id.maps_get_data) {
+            startDownloadData();
         } else if (id == R.id.maps_show_time_ruler) {
             Log.d(LOG_TAG, "ELI:Menu->Show Time Ruler");
             bShowTimeRuler = true;
@@ -270,8 +262,13 @@ public class MapsActivity extends ActionBarActivity {
             Log.d(LOG_TAG, "ELI:Menu->Hide Marker");
             bShowMarker = false;
             hideDataMarkers();
+
+            bShowTimeRuler = false;
+            adjustShowHideTimeRuler();
             Toast.makeText(getApplicationContext(), R.string.hide_marker, Toast.LENGTH_SHORT).show();
             return true;
+        } else if (id == R.id.maps_mix_marker) {
+        } else if (id == R.id.maps_reset_marker) {
         } else {
             Log.d(LOG_TAG, "ELI:Menu->Error");
         }
@@ -314,7 +311,7 @@ public class MapsActivity extends ActionBarActivity {
      * This should only be called once and when we are sure that {@link #mMap} is not null.
      */
     private void setUpMap() {
-        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+        //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
     }
 
     private void adjustShowHideTimeRuler() {
@@ -327,11 +324,42 @@ public class MapsActivity extends ActionBarActivity {
         }
     }
 
+    private void startDownloadData(){
+        new BackgroundDownloader().execute();   //start loading data in background thread
+
+        DataSample[] randomSamples = generateRandomDataSample(10);
+        //if(randomSamples!=null) {
+        //    fillDataMatrixWithDataSample(randomSamples);
+        //    adjustTimeRuler();
+        //}
+
+
+        for(DataSample sample : randomSamples){
+            dbManager.add(sample);
+        }
+//        DataSample[] confirmSample = dbManager.get(null);
+
+//        String[] names = dbManager.getNames();
+//
+//        DataSample[] namedSample = dbManager.get(names[0]);
+
+        DataSample[] databaseSample = dbManager.get(null);
+        for( DataSample s : databaseSample ){
+            boolean suc = dbManager.add(s);
+        }
+
+        DataSample[] databaseSample2 = dbManager.get(null);
+    }
+
     private void moveToLocation(LatLng location){
         final LatLng VANCOUVER = new LatLng(49.2569684,-123.1239135);
         final LatLng HAMBURG   = new LatLng(53.558, 9.927);
         if (mMap != null) {
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(VANCOUVER, 5), ANIMATION_DURATION, null);
+            if(location==null) {
+                location = VANCOUVER;
+                Toast.makeText(getApplicationContext(), "Vancouver", Toast.LENGTH_SHORT).show();
+            }
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 5), ANIMATION_DURATION, null);
         }
     }
 

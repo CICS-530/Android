@@ -8,11 +8,15 @@
 
     <string name="title_activity_maps">Chemicals Map</string>
     <string name="loading_maps">Loading Map ...</string>
+    <string name="here">Current Location</string>
+    <string name="get_data">Get Data</string>
     <string name="time_ruler">Time Ruler</string>
     <string name="show_time_ruler">Show Time Ruler</string>
     <string name="hide_time_ruler">Hide Time Ruler</string>
     <string name="show_marker">Show Marker</string>
     <string name="hide_marker">Hide Marker</string>
+    <string name="mix_marker">Mix Markers</string>
+    <string name="reset_marker">Reset Markers</string>
 
     <string name="select">Select</string>
     <string name="ok">OK</string>
