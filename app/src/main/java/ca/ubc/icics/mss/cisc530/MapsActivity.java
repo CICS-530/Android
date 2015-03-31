@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 public class MapsActivity extends ActionBarActivity {
     final private String LOG_TAG = "MapsActivityLogTag";
@@ -56,8 +57,9 @@ public class MapsActivity extends ActionBarActivity {
     private DbManager dbManager;
     //private Marker mMarkers;
 
-    private String[]   mTypeNames;
-    private String     mMarkingType;
+    private String[]        mTypeNames;
+    private String          mMarkingType;
+    private DataSample[]    mMarkingRawSamples;
 
     final private int ANIMATION_DURATION = 2000;
 
@@ -191,7 +193,9 @@ public class MapsActivity extends ActionBarActivity {
         itemShow = menu.findItem(R.id.maps_show_time_ruler);
         itemHide = menu.findItem(R.id.maps_hide_time_ruler);
         if(bShowMarker){
-            menu.findItem(R.id.maps_mix_marker).setVisible(true);
+            if(canMix(dataMatrix.size())){
+                menu.findItem(R.id.maps_mix_marker).setVisible(true);
+            }
             menu.findItem(R.id.maps_reset_marker).setVisible(true);
 
             if(bShowTimeRuler){
@@ -268,7 +272,13 @@ public class MapsActivity extends ActionBarActivity {
             Toast.makeText(getApplicationContext(), R.string.hide_marker, Toast.LENGTH_SHORT).show();
             return true;
         } else if (id == R.id.maps_mix_marker) {
+            Log.d(LOG_TAG, "ELI:Menu->Mix Marker");
+            mixDataMarkersOnMap();
+            Toast.makeText(getApplicationContext(), R.string.mix_marker, Toast.LENGTH_SHORT).show();
         } else if (id == R.id.maps_reset_marker) {
+            Log.d(LOG_TAG, "ELI:Menu->Reset Marker");
+            resetDataMarkersOnMap();
+            Toast.makeText(getApplicationContext(), R.string.reset_marker, Toast.LENGTH_SHORT).show();
         } else {
             Log.d(LOG_TAG, "ELI:Menu->Error");
         }
@@ -328,20 +338,10 @@ public class MapsActivity extends ActionBarActivity {
         new BackgroundDownloader().execute();   //start loading data in background thread
 
         DataSample[] randomSamples = generateRandomDataSample(10);
-        //if(randomSamples!=null) {
-        //    fillDataMatrixWithDataSample(randomSamples);
-        //    adjustTimeRuler();
-        //}
-
 
         for(DataSample sample : randomSamples){
             dbManager.add(sample);
         }
-//        DataSample[] confirmSample = dbManager.get(null);
-
-//        String[] names = dbManager.getNames();
-//
-//        DataSample[] namedSample = dbManager.get(names[0]);
 
         DataSample[] databaseSample = dbManager.get(null);
         for( DataSample s : databaseSample ){
@@ -549,13 +549,14 @@ public class MapsActivity extends ActionBarActivity {
                 //refresh marker
                 DataSample[] samples = dbManager.get(mMarkingType);
                 if(samples.length>0){
-                    fillDataMatrixWithDataSample(samples);
+                    mMarkingRawSamples = samples;
+                    fillDataMatrixWithDataSample(mMarkingRawSamples);
                     adjustTimeRuler();
 
                     bShowMarker = true;
                     showDataMarkers();
                 }else{
-                    Toast.makeText(getApplicationContext(), "Not enough samples", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), R.string.not_enough_sample, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -571,6 +572,23 @@ public class MapsActivity extends ActionBarActivity {
         updateDataMarkers();
     }
 
+    private DisplaySample searchListByTime(ArrayList<DisplaySample> sampleList, long time){
+        if(sampleList.size()>0){
+            DisplaySample point2Sample = null;
+            for(int i=sampleList.size()-1; i>=0; i-- ) {
+                point2Sample = sampleList.get(i);
+                if(point2Sample.time.getTime()<=time){
+                    break;
+                }
+            }
+
+            //Log.d(LOG_TAG, "searchListByTime() point2Sample=" + point2Sample);
+            return point2Sample;
+        }else{
+            return null;
+        }
+    }
+
     private void updateDataMarkers(){
 
         long point2Time = new Date().getTime();
@@ -582,18 +600,13 @@ public class MapsActivity extends ActionBarActivity {
         for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : dataMatrix.entrySet()) {
             ArrayList<DisplaySample> sampleList = oneLocation.getValue();
 
-            if(sampleList.size()>0){
-                DisplaySample point2Sample = null;
-                for(int i=sampleList.size()-1; i>=0; i-- ) {
-                    point2Sample = sampleList.get(i);
-                    if(point2Sample.time.getTime()<=point2Time){
-                        break;
-                    }
-                }
+            DisplaySample point2Sample = searchListByTime(sampleList, point2Time);
 
-                Log.d(LOG_TAG, "updateDataMarkers() point2Sample=" + point2Sample);
+            Log.d(LOG_TAG, "updateDataMarkers() point2Sample=" + point2Sample);
 
+            if(point2Sample!=null){
                 LatLng location = sampleList.get(0).location;
+
                 if(!markerMatrix.containsKey(location)){
                     Marker aMarker = mMap.addMarker(getMarkerOptions(point2Sample));
                     markerMatrix.put(location, aMarker);
@@ -619,5 +632,106 @@ public class MapsActivity extends ActionBarActivity {
             oneMarker.getValue().remove();
         }
         markerMatrix.clear();
+    }
+
+    private void mixDataMarkersOnMap(){
+        dataMatrix = mixDataMarker(dataMatrix);
+        showDataMarkers();
+    }
+
+    private HashMap<LatLng, ArrayList<DisplaySample>> mixDataMarker(HashMap<LatLng, ArrayList<DisplaySample>> oldMatrix){
+        HashMap<LatLng, ArrayList<DisplaySample>> newMatrix = new HashMap<LatLng, ArrayList<DisplaySample>>();
+        if( canMix(oldMatrix.size()) ){
+            int partNum = getSplitNum(oldMatrix.size());
+
+            double latMin=360, lngMin=360, latMax=-360, lngMax=-360;
+            for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : oldMatrix.entrySet()) {
+                LatLng loc = oneLocation.getKey();
+                if(loc.latitude <latMin) latMin = loc.latitude;
+                if(loc.latitude >latMax) latMax = loc.latitude;
+                if(loc.longitude<lngMin) lngMin = loc.longitude;
+                if(loc.longitude>lngMax) lngMax = loc.longitude;
+            }
+            double latDelta = (latMax-latMin)/partNum;
+            double lngDelta = (lngMax-lngMin)/partNum;
+
+            //use the corner LatLng as the key of the Mix group
+            HashMap<LatLng, ArrayList<ArrayList<DisplaySample>>> tmp = new HashMap<LatLng, ArrayList<ArrayList<DisplaySample>>>();
+            for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : oldMatrix.entrySet()) {
+                LatLng location = oneLocation.getKey();
+                LatLng corner   = new LatLng(latMin + latDelta * (int)((location.latitude -latMin)/latDelta),
+                                        lngMin + lngDelta * (int)((location.longitude-lngMin)/lngDelta));
+
+                if(tmp.containsKey(corner)){
+                    tmp.get(corner).add(oneLocation.getValue());
+                }else{
+                    ArrayList<ArrayList<DisplaySample>> doubleList = new ArrayList<ArrayList<DisplaySample>>();
+                    doubleList.add(oneLocation.getValue());
+                    tmp.put(corner, doubleList);
+                }
+            }
+
+            //Mix each group into array of same location into the new matrix for return
+            for (HashMap.Entry<LatLng, ArrayList<ArrayList<DisplaySample>>> oneGroup : tmp.entrySet()){
+                ArrayList<ArrayList<DisplaySample>> doubleList = oneGroup.getValue();
+                double tLat=0, tLng=0;
+                String station="", name="", unit="";
+                HashMap<Date, Double> tValueHM = new HashMap<Date, Double>();
+                for(ArrayList<DisplaySample> listSample: doubleList){
+                    tLat += listSample.get(0).location.latitude;
+                    tLng += listSample.get(0).location.longitude;
+                    station += listSample.get(0).station + " ";
+
+                    for(int i=0; i<mTimeSeekBarMax; i++){
+                        Date d = new Date(mTimeSeekBarStart.getTime()+mTimeSeekBarInterval*i);
+                        DisplaySample curV = searchListByTime(listSample, d.getTime());
+                        if(tValueHM.containsKey(d)){
+                            Double tmpV = tValueHM.get(d);
+                            tValueHM.put(d, curV.value + tmpV.doubleValue());
+                        }else{
+                            tValueHM.put(d, curV.value);
+                        }
+                    }
+                }
+
+                name = doubleList.get(0).get(0).name;
+                unit = doubleList.get(0).get(0).units;
+
+                //create new data according to time ruler
+                LatLng center = new LatLng(tLat/doubleList.size(), tLng/doubleList.size());
+                ArrayList<DisplaySample> mixList = new ArrayList<DisplaySample>();
+                for(HashMap.Entry<Date, Double> tValue: tValueHM.entrySet()){
+                    mixList.add(new DisplaySample(new DataSample(station, name, null, tValue.getValue()/doubleList.size(), unit, tValue.getKey(), center)));
+                }
+
+                newMatrix.put(center, mixList);
+            }
+        }
+        return newMatrix;
+    }
+
+    boolean canMix(int sampleNum){
+        return getSplitNum(sampleNum)>1 ? true : false;
+    }
+
+    int getSplitNum(int sampleNum){
+        if(sampleNum>0){
+            int sr = (int) Math.sqrt(sampleNum);
+            return sr/2;
+        }else{
+            return 0;
+        }
+    }
+
+    private void resetDataMarkersOnMap(){
+        if(mMarkingRawSamples.length>0){
+            fillDataMatrixWithDataSample(mMarkingRawSamples);
+            adjustTimeRuler();
+
+            bShowMarker = true;
+            showDataMarkers();
+        }else{
+            Toast.makeText(getApplicationContext(), R.string.not_enough_sample, Toast.LENGTH_SHORT).show();
+        }
     }
 }
