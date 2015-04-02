@@ -335,20 +335,26 @@ public class MapsActivity extends ActionBarActivity {
     }
 
     private void startDownloadData(){
-        new BackgroundDownloader().execute();   //start loading data in background thread
+        new BackgroundDownloader(dbManager, new BackgroundDownloader.OnTaskCompleted(){
 
-        DataSample[] randomSamples = generateRandomDataSample(10);
+            @Override
+            public void OnTaskCompleted() {
+                DataSample[] randomSamples = generateRandomDataSample(10);
 
-        for(DataSample sample : randomSamples){
-            dbManager.add(sample);
-        }
+                for(DataSample sample : randomSamples){
+                    dbManager.add(sample);
+                }
 
-        DataSample[] databaseSample = dbManager.get(null);
-        for( DataSample s : databaseSample ){
-            boolean suc = dbManager.add(s);
-        }
+                DataSample[] databaseSample = dbManager.get(null);
+                for( DataSample s : databaseSample ){
+                    boolean suc = dbManager.add(s);
+                }
 
-        DataSample[] databaseSample2 = dbManager.get(null);
+                DataSample[] databaseSample2 = dbManager.get(null);
+            }
+
+        }).execute();   //start loading data in background thread
+
     }
 
     private void moveToLocation(LatLng location){

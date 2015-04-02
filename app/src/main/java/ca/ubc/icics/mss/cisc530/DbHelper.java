@@ -50,9 +50,18 @@ public class DbHelper extends SQLiteOpenHelper{
                 getDataSampleColumnName(DataSampleDef.TIME)       + ", " +
                 getDataSampleColumnName(DataSampleDef.NAME) + ")";
         sql+= ");";
-
         Log.d(LOG_TAG, sql);
+        db.execSQL(sql);
 
+        //CREATE INDEX index_name ON table_name(column1, column2);
+        sql = "CREATE INDEX " +
+                TABLE_NAME + "_" + getDataSampleColumnName(DataSampleDef.TIME) + "_idx" +
+                " ON " +
+                TABLE_NAME +
+                " (" +
+                getDataSampleColumnName(DataSampleDef.TIME) +
+                ");";
+        Log.d(LOG_TAG, sql);
         db.execSQL(sql);
     }
 

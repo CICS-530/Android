@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Elitward on 15-03-13.
@@ -15,11 +16,25 @@ import java.util.ArrayList;
 public class BackgroundDownloader extends AsyncTask<Void, Integer, Boolean>{
     private String LOG_TAG = "BackgroundDownloaderLogTag";
 
+    private DbManager dbManager = null;
+    private OnTaskCompleted callback = null;
     private ArrayList<DataSample> listSamples = new ArrayList<DataSample>();
+
+    public BackgroundDownloader(DbManager database, OnTaskCompleted onTaskCompleted) {
+        dbManager = database;
+        callback = onTaskCompleted;
+    }
+
+    public interface OnTaskCompleted{
+        void OnTaskCompleted();
+    }
 
     @Override
     protected Boolean doInBackground(Void... params) {
         Log.d(LOG_TAG, "doInBackground() with" + params);
+
+        Date lastDate = dbManager.getLastDate();
+        Log.d(LOG_TAG, "doInBackground() lastDate=" + lastDate);
 
         HttpJSONParser jsonParser = new HttpJSONParser();
         //jsonParser.setHttpURL("https://pollutantapi-aaroncheng.rhcloud.com/realtime/stationdata");

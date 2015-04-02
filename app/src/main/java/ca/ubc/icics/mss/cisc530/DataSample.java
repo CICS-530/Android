@@ -47,7 +47,7 @@ public class DataSample implements Serializable{
         this.location = new LatLng(lat, lng);
     }
 
-    public static byte[] seralize(DataSample sample) {
+    public static byte[] Seralize(DataSample sample) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
             ObjectOutput out = new ObjectOutputStream(bos);
@@ -62,7 +62,7 @@ public class DataSample implements Serializable{
         }
     }
 
-    public static DataSample deseralize(byte[] array) {
+    public static DataSample Deseralize(byte[] array) {
         try {
             ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(array));
             DataSample sample = (DataSample) (in.readObject());

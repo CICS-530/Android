@@ -38,7 +38,7 @@ public class DbManager {
 
     public boolean add(DataSample sample){
         ContentValues cv = new ContentValues();
-        //byte[] buf = DataSample.seralize(sample);
+        //byte[] buf = DataSample.Seralize(sample);
         //cv.put(DbHelper.COLUMN_NAME, buf);
         for(DataSampleDef def: DataSampleDef.values()){
             switch (def){
@@ -71,7 +71,7 @@ public class DbManager {
         Cursor c = db.query(DbHelper.TABLE_NAME, null, selection, selectionArgs, null, null, null);
         while(c.moveToNext()){
             //byte[] array = c.getBlob(0);
-            //DataSample sample = DataSample.deseralize(array);
+            //DataSample sample = DataSample.Deseralize(array);
             DataSample sample = new DataSample();
             int col=0;
             double lng=0, lat=0;
@@ -92,6 +92,7 @@ public class DbManager {
             }
             list.add(sample);
         }
+        c.close();
 
         if(list.size()>0){
             DataSample[] array = new DataSample[list.size()];
@@ -110,12 +111,34 @@ public class DbManager {
             String one = c.getString(0);
             names.add(one);
         }
+        c.close();
         if(names.size()>0){
             String[] array = new String[names.size()];
             return names.toArray(array);
         }else{
             return null;
         }
+    }
+
+    public Date getLastDate(){
+        //"SELECT MAX(date) FROM table_name"
+        String sql = "SELECT MAX(" +
+                DbHelper.getDataSampleColumnName(DataSampleDef.TIME) +
+                ") FROM " +
+                DbHelper.TABLE_NAME +
+                ";";
+        Cursor c = db.rawQuery(sql, null);
+        if(c!=null && c.getCount()>0) {
+            if(c.moveToFirst()){
+                long l = c.getLong(0);
+                if(l>0) {
+                    Date time = new Date();
+                    return time;
+                }
+            }
+            c.close();
+        }
+        return null;
     }
 
     public void clear(){
