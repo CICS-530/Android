@@ -23,6 +23,7 @@
     <string name="cancel">Cancel</string>
 
     <string name="not_enough_sample">Not enough sample.</string>
+    <string name="downloading">Downloading ...</string>
     <string name="download_finished">Download finished.</string>
 
 </resources>

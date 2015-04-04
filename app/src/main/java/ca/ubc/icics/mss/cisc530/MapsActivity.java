@@ -1,6 +1,7 @@
 package ca.ubc.icics.mss.cisc530;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -28,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 
 public class MapsActivity extends ActionBarActivity {
     final private String LOG_TAG = "MapsActivityLogTag";
@@ -62,6 +62,8 @@ public class MapsActivity extends ActionBarActivity {
     private DataSample[]    mMarkingRawSamples;
 
     final private int ANIMATION_DURATION = 2000;
+
+    private ProgressDialog mProgressDlg = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -336,15 +338,26 @@ public class MapsActivity extends ActionBarActivity {
 
     private void startDownloadData(){
 
-        BackgroundDownloader.OnTaskCompleted callback = new BackgroundDownloader.OnTaskCompleted(){
-
+        BackgroundDownloader.OnTaskCompleted onTaskCompleted = new BackgroundDownloader.OnTaskCompleted(){
             @Override
             public void OnTaskCompleted() {
+                downloadProgressClose();
                 Toast.makeText(getApplicationContext(), R.string.download_finished, Toast.LENGTH_LONG).show();
             }
         };
+        BackgroundDownloader.OnTaskInProgress onTaskInProgress = new BackgroundDownloader.OnTaskInProgress() {
+            @Override
+            public void OnTaskInProgress(int cur, int max) {
+                downloadProgressUpdate(cur, max);
+            }
+        };
 
-        new BackgroundDownloader().setDatabaseManager(dbManager).setCallbackListener(callback).execute();   //start loading data in background thread
+        downloadProgressStart();
+
+        new BackgroundDownloader().setDatabaseManager(dbManager).
+                setCompletedCallbackListener(onTaskCompleted).
+                setInProgressCallbackListener(onTaskInProgress).
+                execute();   //start loading data in background thread
 
         //DataSample[] randomSamples = generateRandomDataSample(10);
         //
@@ -530,6 +543,34 @@ public class MapsActivity extends ActionBarActivity {
 
     private float getAlphaValue(Double value){
         return (float) ((float) 0.1 + 0.9 * (value-dValueMix)/dValueMax);
+    }
+
+    private void downloadProgressStart(){
+        if(mProgressDlg!=null) {
+            mProgressDlg.dismiss();
+        }
+        mProgressDlg = new ProgressDialog(this);
+        mProgressDlg.setTitle(R.string.downloading);
+        mProgressDlg.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        mProgressDlg.show();
+    }
+
+    private void downloadProgressUpdate(int cur, int max){
+        if(mProgressDlg!=null) {
+            if(max!=mProgressDlg.getMax()){
+                mProgressDlg.setMax(max);
+            }
+            if(cur!=mProgressDlg.getProgress()){
+                mProgressDlg.setProgress(cur);
+            }
+        }
+    }
+
+    private void downloadProgressClose(){
+        if(mProgressDlg!=null) {
+            mProgressDlg.dismiss();
+        }
+        mProgressDlg = null;
     }
 
     private void showSelectionByName(){

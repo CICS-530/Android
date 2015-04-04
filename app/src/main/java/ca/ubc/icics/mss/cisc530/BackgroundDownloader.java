@@ -18,7 +18,9 @@ public class BackgroundDownloader extends AsyncTask<Void, Integer, Boolean>{
     private long OVERLAP_TIME = 2*60*60*1000; //two hours in ms
 
     private DbManager dbManager = null;
-    private OnTaskCompleted callback = null;
+    private OnTaskCompleted  completeCallback = null;
+    private OnTaskInProgress progressCallback = null;
+
     private ArrayList<DataSample> listSamples = new ArrayList<DataSample>();
     Date lastDate;
 
@@ -28,8 +30,13 @@ public class BackgroundDownloader extends AsyncTask<Void, Integer, Boolean>{
         return this;
     }
 
-    public BackgroundDownloader setCallbackListener(OnTaskCompleted onTaskCompleted){
-        callback = onTaskCompleted;
+    public BackgroundDownloader setCompletedCallbackListener(OnTaskCompleted onTaskCompleted){
+        completeCallback = onTaskCompleted;
+        return this;
+    }
+
+    public BackgroundDownloader setInProgressCallbackListener(OnTaskInProgress onTaskInProgress){
+        progressCallback = onTaskInProgress;
         return this;
     }
 
@@ -37,10 +44,15 @@ public class BackgroundDownloader extends AsyncTask<Void, Integer, Boolean>{
         void OnTaskCompleted();
     }
 
+    public interface OnTaskInProgress{
+        void OnTaskInProgress(int cur, int max);
+    }
+
     @Override
     protected Boolean doInBackground(Void... params) {
         //final String url = "http://pollutantapi-aaroncheng.rhcloud.com/reading/dataDate/[id]/[dayOffset]";
         final String url = "http://pollutantapi-aaroncheng.rhcloud.com/reading/dataDate/";
+        final int idMax = 25;
         Log.d(LOG_TAG, "doInBackground() with" + params);
 
         //if(dbManager!=null){
@@ -55,7 +67,7 @@ public class BackgroundDownloader extends AsyncTask<Void, Integer, Boolean>{
         //jsonParser.setHttpURL("http://pollutantapi-aaroncheng.rhcloud.com/reading/latestData/1");
         listSamples.clear();
 
-        for(int id=1; ;id++){
+        for(int id=1; id<=idMax;id++){
             boolean na = true;  //assume not available, unless get same data
             for(int day=0; ; day++){
                 jsonParser.setHttpURL(url + "/" + id + "/" + day);
@@ -81,11 +93,13 @@ public class BackgroundDownloader extends AsyncTask<Void, Integer, Boolean>{
             if(na){
                 break;
             }
+
+            publishProgress(id, idMax);
         }
 
-        for(int i=0; i<10; i++){
-            //publishProgress(i);
-        }
+        //for(int i=0; i<10; i++){
+        //    publishProgress(i);
+        //}
         return null;
     }
 
@@ -184,8 +198,8 @@ public class BackgroundDownloader extends AsyncTask<Void, Integer, Boolean>{
     protected void onPostExecute(Boolean aBoolean) {
         Log.d(LOG_TAG, "onPostExecute() with " + aBoolean);
         super.onPostExecute(aBoolean);
-        if(callback!=null) {
-            callback.OnTaskCompleted();
+        if(completeCallback !=null) {
+            completeCallback.OnTaskCompleted();
         }
     }
 
@@ -193,5 +207,8 @@ public class BackgroundDownloader extends AsyncTask<Void, Integer, Boolean>{
     protected void onProgressUpdate(Integer... values) {
         Log.d(LOG_TAG, "onProgressUpdate() with " + values[0]);
         super.onProgressUpdate(values);
+        if(progressCallback!=null){
+            progressCallback.OnTaskInProgress(values[0], values[1]);
+        }
     }
 }
