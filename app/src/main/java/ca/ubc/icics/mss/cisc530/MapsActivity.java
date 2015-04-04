@@ -335,26 +335,29 @@ public class MapsActivity extends ActionBarActivity {
     }
 
     private void startDownloadData(){
-        new BackgroundDownloader(dbManager, new BackgroundDownloader.OnTaskCompleted(){
+
+        BackgroundDownloader.OnTaskCompleted callback = new BackgroundDownloader.OnTaskCompleted(){
 
             @Override
             public void OnTaskCompleted() {
-                DataSample[] randomSamples = generateRandomDataSample(10);
-
-                for(DataSample sample : randomSamples){
-                    dbManager.add(sample);
-                }
-
-                DataSample[] databaseSample = dbManager.get(null);
-                for( DataSample s : databaseSample ){
-                    boolean suc = dbManager.add(s);
-                }
-
-                DataSample[] databaseSample2 = dbManager.get(null);
+                Toast.makeText(getApplicationContext(), R.string.download_finished, Toast.LENGTH_LONG).show();
             }
+        };
 
-        }).execute();   //start loading data in background thread
+        new BackgroundDownloader().setDatabaseManager(dbManager).setCallbackListener(callback).execute();   //start loading data in background thread
 
+        //DataSample[] randomSamples = generateRandomDataSample(10);
+        //
+        //for(DataSample sample : randomSamples){
+        //    dbManager.add(sample);
+        //}
+        //
+        //DataSample[] databaseSample = dbManager.get(null);
+        //for( DataSample s : databaseSample ){
+        //    boolean suc = dbManager.add(s);
+        //}
+        //
+        //DataSample[] databaseSample2 = dbManager.get(null);
     }
 
     private void moveToLocation(LatLng location){
@@ -534,6 +537,10 @@ public class MapsActivity extends ActionBarActivity {
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
 
         mTypeNames = dbManager.getNames();
+        if(mTypeNames==null){
+            return;
+        }
+
         for(int i=0; i<mTypeNames.length; i++){
             if(mMarkingType!=null && mTypeNames[i].compareTo(mMarkingType)==0){
                 selectionIdx = i;

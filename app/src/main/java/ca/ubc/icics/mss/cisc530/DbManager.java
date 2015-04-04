@@ -3,6 +3,7 @@ package ca.ubc.icics.mss.cisc530;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
@@ -52,7 +53,13 @@ public class DbManager {
                 case LONGITUDE: cv.put(DbHelper.getDataSampleColumnName(def), sample.location.longitude);   break;
             }
         }
-        long ret = db.insert(DbHelper.TABLE_NAME, null, cv);
+        //long ret = db.insert(DbHelper.TABLE_NAME, null, cv);
+        long ret = -1;
+        try {
+            ret = db.insertOrThrow(DbHelper.TABLE_NAME, null, cv);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         if(ret>=0){
             return true;
         }else{
