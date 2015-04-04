@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -21,6 +22,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -34,6 +36,7 @@ public class MapsActivity extends ActionBarActivity {
     final private String LOG_TAG = "MapsActivityLogTag";
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
+    private CameraPosition mCamPos;
 
     private GPSTracker mGPS;
 
@@ -241,10 +244,14 @@ public class MapsActivity extends ActionBarActivity {
         } else if (id == R.id.maps_here) {
             if(mGPS.canGetLocation()){
                 LatLng loc = mGPS.getLatLng();
-                moveToLocation(loc);
+                mapMoveToLocation(loc);
             }else{
                 Toast.makeText(getApplicationContext(), "GPS Setting Error!", Toast.LENGTH_SHORT).show();
             }
+        } else if (id == R.id.zoom_in) {
+            mapZoomIn();
+        } else if (id == R.id.zoom_out) {
+            mapZoomOut();
         } else if (id == R.id.maps_get_data) {
             startDownloadData();
         } else if (id == R.id.maps_show_time_ruler) {
@@ -324,6 +331,14 @@ public class MapsActivity extends ActionBarActivity {
      */
     private void setUpMap() {
         //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+
+        mMap.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+            @Override
+            public void onCameraChange(CameraPosition cameraPosition) {
+                Log.d(LOG_TAG, "ELI:onCameraChange " + cameraPosition.target + " @" + cameraPosition.zoom);
+                mCamPos = cameraPosition;
+            }
+        });
     }
 
     private void adjustShowHideTimeRuler() {
@@ -373,7 +388,7 @@ public class MapsActivity extends ActionBarActivity {
         //DataSample[] databaseSample2 = dbManager.get(null);
     }
 
-    private void moveToLocation(LatLng location){
+    private void mapMoveToLocation(LatLng location){
         final LatLng VANCOUVER = new LatLng(49.2569684,-123.1239135);
         final LatLng HAMBURG   = new LatLng(53.558, 9.927);
         if (mMap != null) {
@@ -382,6 +397,18 @@ public class MapsActivity extends ActionBarActivity {
                 Toast.makeText(getApplicationContext(), "Vancouver", Toast.LENGTH_SHORT).show();
             }
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 5), ANIMATION_DURATION, null);
+        }
+    }
+
+    private void mapZoomIn(){
+        if(mMap!=null){
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mCamPos.target, mCamPos.zoom+1), ANIMATION_DURATION, null);
+        }
+    }
+
+    private void mapZoomOut(){
+        if(mMap!=null){
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(mCamPos.target, mCamPos.zoom-1), ANIMATION_DURATION, null);
         }
     }
 

@@ -17,6 +17,18 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/zoom_in"
+        android:title="@string/zoom_in"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/zoom_out"
+        android:title="@string/zoom_out"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/maps_get_data"
         android:title="@string/get_data"
         android:orderInCategory="100"
