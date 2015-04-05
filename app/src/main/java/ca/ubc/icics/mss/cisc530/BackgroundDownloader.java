@@ -161,6 +161,7 @@ public class BackgroundDownloader extends AsyncTask<Void, Integer, Boolean>{
                         String uni = one.getString(UNITS);
                         sample = new DataSample(sta, nam, null, val, uni, date, lat, lng);
 
+                        Log.d(LOG_TAG, "ELI: sample " + sample);
                         listSamples.add(sample);
                     } catch (JSONException e){
                         continue;

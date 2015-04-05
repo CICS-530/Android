@@ -27,6 +27,21 @@ public class DataSample implements Serializable{
     public DataSample(){
     }
 
+    @Override
+    public String toString() {
+        //return super.toString();
+        return "DataSample [" +
+                station + " " +
+                name    + " " +
+                details + " " +
+                value   + " " +
+                units   + " " +
+                time    + " " +
+                location.latitude  + " " +
+                location.longitude +
+                "]";
+    }
+
     public DataSample(String station, String name, String details, Double value, String units, Date time, LatLng location) {
         this.station = station;
         this.name = name;
