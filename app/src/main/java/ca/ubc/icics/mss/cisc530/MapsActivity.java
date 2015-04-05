@@ -200,6 +200,8 @@ public class MapsActivity extends ActionBarActivity {
         if(bShowMarker){
             if(canMix(dataMatrix.size())){
                 menu.findItem(R.id.maps_mix_marker).setVisible(true);
+            }else{
+                menu.findItem(R.id.maps_mix_marker).setVisible(false);
             }
             menu.findItem(R.id.maps_reset_marker).setVisible(true);
 
@@ -655,6 +657,7 @@ public class MapsActivity extends ActionBarActivity {
 
     private DisplaySample searchListByTime(ArrayList<DisplaySample> sampleList, long time){
         if(sampleList.size()>0){
+            Date date = new Date(time);
             DisplaySample point2Sample = null;
             for(int i=sampleList.size()-1; i>=0; i-- ) {
                 point2Sample = sampleList.get(i);
@@ -663,7 +666,7 @@ public class MapsActivity extends ActionBarActivity {
                 }
             }
 
-            //Log.d(LOG_TAG, "searchListByTime() point2Sample=" + point2Sample);
+            Log.d(LOG_TAG, "ELI: searchListByTime() point2Sample=" + point2Sample.station + " " + point2Sample.name + "=" + point2Sample.value + point2Sample.units + " @" + point2Sample.time + "(" + date + ")");
             return point2Sample;
         }else{
             return null;
@@ -716,15 +719,19 @@ public class MapsActivity extends ActionBarActivity {
     }
 
     private void mixDataMarkersOnMap(){
-        dataMatrix = mixDataMarker(dataMatrix);
-        showDataMarkers();
+        HashMap<LatLng, ArrayList<DisplaySample>> tmp = mixDataMarker(dataMatrix);
+        if(tmp!=null){
+            dataMatrix = tmp;
+            showDataMarkers();
+        }
     }
 
     private HashMap<LatLng, ArrayList<DisplaySample>> mixDataMarker(HashMap<LatLng, ArrayList<DisplaySample>> oldMatrix){
-        HashMap<LatLng, ArrayList<DisplaySample>> newMatrix = new HashMap<LatLng, ArrayList<DisplaySample>>();
         if( canMix(oldMatrix.size()) ){
+            HashMap<LatLng, ArrayList<DisplaySample>> newMatrix = new HashMap<LatLng, ArrayList<DisplaySample>>();
             int partNum = getSplitNum(oldMatrix.size());
 
+            //calculate new markers distribution (grid size)
             double latMin=360, lngMin=360, latMax=-360, lngMax=-360;
             for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : oldMatrix.entrySet()) {
                 LatLng loc = oneLocation.getKey();
@@ -736,36 +743,40 @@ public class MapsActivity extends ActionBarActivity {
             double latDelta = (latMax-latMin)/partNum;
             double lngDelta = (lngMax-lngMin)/partNum;
 
-            //use the corner LatLng as the key of the Mix group
-            HashMap<LatLng, ArrayList<ArrayList<DisplaySample>>> tmp = new HashMap<LatLng, ArrayList<ArrayList<DisplaySample>>>();
-            for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneLocation : oldMatrix.entrySet()) {
-                LatLng location = oneLocation.getKey();
+            //use the corner LatLng of each grid cell as the key of the Mix group
+            HashMap<LatLng, ArrayList<ArrayList<DisplaySample>>> tmpGrid = new HashMap<LatLng, ArrayList<ArrayList<DisplaySample>>>();
+            for (HashMap.Entry<LatLng, ArrayList<DisplaySample>> oneOldLocation : oldMatrix.entrySet()) {
+                LatLng location = oneOldLocation.getKey();
                 LatLng corner   = new LatLng(latMin + latDelta * (int)((location.latitude -latMin)/latDelta),
                                         lngMin + lngDelta * (int)((location.longitude-lngMin)/lngDelta));
 
-                if(tmp.containsKey(corner)){
-                    tmp.get(corner).add(oneLocation.getValue());
+                if(tmpGrid.containsKey(corner)){
+                    tmpGrid.get(corner).add(oneOldLocation.getValue());
                 }else{
                     ArrayList<ArrayList<DisplaySample>> doubleList = new ArrayList<ArrayList<DisplaySample>>();
-                    doubleList.add(oneLocation.getValue());
-                    tmp.put(corner, doubleList);
+                    doubleList.add(oneOldLocation.getValue());
+                    tmpGrid.put(corner, doubleList);
                 }
             }
 
-            //Mix each group into array of same location into the new matrix for return
-            for (HashMap.Entry<LatLng, ArrayList<ArrayList<DisplaySample>>> oneGroup : tmp.entrySet()){
-                ArrayList<ArrayList<DisplaySample>> doubleList = oneGroup.getValue();
+            //Mix each group (grid) into array of same location into the new matrix for return
+            for (HashMap.Entry<LatLng, ArrayList<ArrayList<DisplaySample>>> oneGroup : tmpGrid.entrySet()){
+                ArrayList<ArrayList<DisplaySample>> allLocationsInGroup = oneGroup.getValue();
                 double tLat=0, tLng=0;
                 String station="", name="", unit="";
                 HashMap<Date, Double> tValueHM = new HashMap<Date, Double>();
-                for(ArrayList<DisplaySample> listSample: doubleList){
-                    tLat += listSample.get(0).location.latitude;
-                    tLng += listSample.get(0).location.longitude;
-                    station += listSample.get(0).station + " ";
 
-                    for(int i=0; i<mTimeSeekBarMax; i++){
+                for(ArrayList<DisplaySample> allSamplesInLocation : allLocationsInGroup){
+                    tLat += allSamplesInLocation.get(0).location.latitude;
+                    tLng += allSamplesInLocation.get(0).location.longitude;
+                    if(station.length()>0){
+                        station += ", ";
+                    }
+                    station += allSamplesInLocation.get(0).station;
+
+                    for(int i=0; i<=mTimeSeekBarMax; i++){
                         Date d = new Date(mTimeSeekBarStart.getTime()+mTimeSeekBarInterval*i);
-                        DisplaySample curV = searchListByTime(listSample, d.getTime());
+                        DisplaySample curV = searchListByTime(allSamplesInLocation, d.getTime());
                         if(tValueHM.containsKey(d)){
                             Double tmpV = tValueHM.get(d);
                             tValueHM.put(d, curV.value + tmpV.doubleValue());
@@ -775,20 +786,23 @@ public class MapsActivity extends ActionBarActivity {
                     }
                 }
 
-                name = doubleList.get(0).get(0).name;
-                unit = doubleList.get(0).get(0).units;
+                name = allLocationsInGroup.get(0).get(0).name;
+                unit = allLocationsInGroup.get(0).get(0).units;
 
                 //create new data according to time ruler
-                LatLng center = new LatLng(tLat/doubleList.size(), tLng/doubleList.size());
+                LatLng center = new LatLng(tLat/allLocationsInGroup.size(), tLng/allLocationsInGroup.size());
                 ArrayList<DisplaySample> mixList = new ArrayList<DisplaySample>();
                 for(HashMap.Entry<Date, Double> tValue: tValueHM.entrySet()){
-                    mixList.add(new DisplaySample(new DataSample(station, name, null, tValue.getValue()/doubleList.size(), unit, tValue.getKey(), center)));
+                    mixList.add(new DisplaySample(new DataSample(station, name, null, tValue.getValue()/allLocationsInGroup.size(), unit, tValue.getKey(), center)));
                 }
+                Collections.sort(mixList);
 
                 newMatrix.put(center, mixList);
             }
+            return newMatrix;
+        }else {
+            return null;   //continue to show old markers on map
         }
-        return newMatrix;
     }
 
     boolean canMix(int sampleNum){
