@@ -52,7 +52,7 @@ public class BackgroundDownloader extends AsyncTask<Void, Integer, Boolean>{
     protected Boolean doInBackground(Void... params) {
         //final String url = "http://pollutantapi-aaroncheng.rhcloud.com/reading/dataDate/[id]/[dayOffset]";
         final String url = "http://pollutantapi-aaroncheng.rhcloud.com/reading/dataDate/";
-        final int idMax = 25;
+        final int idMax = 23;
         Log.d(LOG_TAG, "doInBackground() with" + params);
 
         //if(dbManager!=null){
