@@ -95,7 +95,7 @@ public class MapsActivity extends ActionBarActivity {
                 mTimeBtnNext.setEnabled(progress < mTimeSeekBarMax);
                 if(mTimeSeekBarStart!=null) {
                     //mTimeMsg.setText(progress + "/" + mTimeSeekBarMax + " " + new Date(mTimeSeekBarStart.getTime() + progress * mTimeSeekBarInterval));
-                    mTimeMsg.setText("" + new Date(mTimeSeekBarStart.getTime() + progress * mTimeSeekBarInterval));
+                    mTimeMsg.setText("" + new Date(mTimeSeekBarStart.getTime() + progress * mTimeSeekBarInterval + mTimeSeekBarMax));   //add mTimeSeekBarMax (ms) here to prevent time displayed in "xx:59:59"
                 }
                 if(bShowMarker){
                     updateDataMarkers();
