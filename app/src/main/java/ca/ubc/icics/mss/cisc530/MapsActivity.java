@@ -571,7 +571,8 @@ public class MapsActivity extends ActionBarActivity {
     }
 
     private float getAlphaValue(Double value){
-        return (float) ((float) 0.1 + 0.9 * (value-dValueMix)/dValueMax);
+        final float BASE_ALPHA_VALUE = (float) 0.3;
+        return (float) (BASE_ALPHA_VALUE + (1-BASE_ALPHA_VALUE) * (value-dValueMix)/dValueMax);
     }
 
     private void downloadProgressStart(){
